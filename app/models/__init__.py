@@ -3,7 +3,7 @@ from .businesses import BusinessModel
 from .users import UserModel, UserRole
 from .services import ServiceModel
 from .time_periods import TimePeriodModel, WeekDay
-from .bookings import BookingModel, BookingStatus
+from .bookings import BookingModel, BookingStatus, BookingHistoryModel
 from .query_history import QueryHistoryModel, QueryTemplateModel
 from .staff_services import StaffServiceModel
 from .staff_availability import StaffAvailabilityModel, AvailabilityType
@@ -19,6 +19,7 @@ __all__ = [
     "WeekDay",
     "BookingModel",
     "BookingStatus",
+    "BookingHistoryModel",
     "QueryHistoryModel",
     "QueryTemplateModel",
     "StaffServiceModel",

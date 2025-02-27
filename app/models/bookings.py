@@ -35,10 +35,8 @@ class BookingModel(BaseDBModel):
     service_id: UUID = Field(description="服務項目ID")
     staff_id: Optional[UUID] = Field(default=None, description="服務人員ID")
     status: str = Field(default="confirmed", description="預約狀態")
-    created_at: Optional[datetime] = Field(default=None, description="創建時間")
     updated_at: Optional[datetime] = Field(default=None, description="更新時間")
     user_id: Optional[UUID] = Field(default=None, description="用戶ID")
-    
     
     model_config = {
         "json_schema_extra": {
@@ -56,6 +54,31 @@ class BookingModel(BaseDBModel):
                 "customer_phone": "0912345678",
                 "status": "confirmed",
                 "number_of_people": 1
+            }
+        }
+    }
+
+
+class BookingHistoryModel(BaseDBModel):
+    """預約狀態歷史記錄模型 - 對應 n8n_booking_history 表"""
+    
+    booking_id: UUID = Field(description="預約ID")
+    previous_status: Optional[str] = Field(description="之前的狀態")
+    new_status: str = Field(description="新狀態")
+    changed_by: Optional[UUID] = Field(default=None, description="變更者ID")
+    reason: Optional[str] = Field(default=None, description="變更原因")
+    created_at: Optional[datetime] = Field(default=None, description="創建時間")
+    
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "id": "123e4567-e89b-12d3-a456-426614174099",
+                "booking_id": "123e4567-e89b-12d3-a456-426614174004",
+                "previous_status": "pending",
+                "new_status": "confirmed",
+                "changed_by": "123e4567-e89b-12d3-a456-426614174005",
+                "reason": "客戶已確認預約",
+                "created_at": "2025-01-15T10:30:00+08:00"
             }
         }
     }
