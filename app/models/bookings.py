@@ -16,39 +16,45 @@ class BookingStatus(str, Enum):
 
 
 class BookingModel(BaseDBModel):
-    """預約模型"""
+    """預約模型 - 對應 n8n_booking_bookings 表"""
     
+    booking_created_at: Optional[datetime] = Field(default=None, description="預約創建時間")
+    booking_date: date = Field(description="預約日期")
+    booking_duration: Optional[str] = Field(default=None, description="預約時長")
+    booking_start_time: time = Field(description="預約開始時間")
     business_id: UUID = Field(description="所屬商家ID")
-    customer_id: UUID = Field(description="客戶ID")
+    customer_email: str = Field(description="客戶電子郵件")
+    customer_name: str = Field(description="客戶名稱")
+    customer_notes: Optional[str] = Field(default=None, description="客戶備註")
+    customer_phone: Optional[str] = Field(default=None, description="客戶電話")
+    line_user_id: Optional[str] = Field(default=None, description="Line用戶ID")
+    notes: Optional[str] = Field(default=None, description="備註")
+    notification_status: Optional[Dict[str, Any]] = Field(default=None, description="通知狀態")
+    number_of_people: Optional[int] = Field(default=1, description="預約人數")
+    period_id: Optional[UUID] = Field(default=None, description="預約時段ID")
     service_id: UUID = Field(description="服務項目ID")
     staff_id: Optional[UUID] = Field(default=None, description="服務人員ID")
-    period_id: UUID = Field(description="預約時段ID")
-    start_time: datetime = Field(description="預約開始時間")
-    end_time: datetime = Field(description="預約結束時間")
-    status: BookingStatus = Field(default=BookingStatus.PENDING, description="預約狀態")
-    customer_notes: Optional[str] = Field(default=None, description="客戶備註")
-    staff_notes: Optional[str] = Field(default=None, description="員工備註")
-    notification_status: Optional[Dict[str, Any]] = Field(default=None, description="通知狀態")
+    status: str = Field(default="confirmed", description="預約狀態")
+    updated_at: Optional[datetime] = Field(default=None, description="更新時間")
+    user_id: Optional[UUID] = Field(default=None, description="用戶ID")
     
-    @field_validator('end_time')
-    def end_time_must_be_after_start_time(cls, v, values):
-        """確保結束時間在開始時間之後"""
-        if 'start_time' in values.data and v <= values.data['start_time']:
-            raise ValueError('結束時間必須晚於開始時間')
-        return v
     
     model_config = {
         "json_schema_extra": {
             "example": {
                 "id": "123e4567-e89b-12d3-a456-426614174004",
                 "business_id": "123e4567-e89b-12d3-a456-426614174000",
-                "customer_id": "123e4567-e89b-12d3-a456-426614174001",
+                "booking_date": "2025-01-15",
+                "booking_start_time": "10:00:00",
+                "booking_duration": "1 hour",
                 "service_id": "123e4567-e89b-12d3-a456-426614174002",
                 "staff_id": "123e4567-e89b-12d3-a456-426614174005",
                 "period_id": "123e4567-e89b-12d3-a456-426614174003",
-                "start_time": "2025-01-15T10:00:00+08:00",
-                "end_time": "2025-01-15T11:00:00+08:00",
-                "status": "confirmed"
+                "customer_name": "王小明",
+                "customer_email": "example@email.com",
+                "customer_phone": "0912345678",
+                "status": "confirmed",
+                "number_of_people": 1
             }
         }
     }

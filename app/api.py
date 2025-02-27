@@ -5,7 +5,9 @@ from .services import (
     SQLResult, 
     DatabaseService, 
     llm_service, 
-    LLMResponse
+    LLMResponse,
+    conversation_manager,
+    visualization_service
 )
 from .models import QueryHistoryModel
 from .utils import settings
@@ -86,6 +88,7 @@ class SimilarQueryModel(BaseModel):
 class SQLResultResponse(SQLResult):
     """SQL結果響應模型，包含相似查詢"""
     similar_queries: Optional[List[SimilarQueryModel]] = None
+    parameters: Optional[Dict[str, Any]] = Field(default=None, description="SQL參數")
 
 
 @app.post("/api/text-to-sql", response_model=SQLResultResponse)
