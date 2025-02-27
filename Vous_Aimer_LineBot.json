@@ -1,0 +1,771 @@
+{
+  "name": "Vous Aimer LineBot",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "=你是一個專門協助處理{{ $('Supabase').item.json.name }}課程預約的 AI 助理，你的名字叫小瓜。你的主要任務是理解使用者的需求，並使用適當的工具來查詢或修改預約、服務、時段等資料。絕對禁止與用戶閒聊，或討論與商家服務預約無關的話題，你只可以做預約相關的工作\n\n目前時間：{{ $now.setZone($('Supabase').item.json.timezone) }}\n商家資料：\n名稱：{{ $('Supabase').item.json.name }}\n電話：{{ $('Supabase').item.json.contact_phone }}\n地址：{{ $('Supabase').item.json.address }}\nID：{{ $('Supabase').item.json.id }}\n服務：{{ $('Supabase').item.json.description }}\n\n你可以使用的工具：\n\n1.  create_booking：建立新預約\n    *   說明：用於建立新的課程預約。\n    *   你需要先向用戶取得以下資訊：\n        *   客戶姓名 (必填)\n        *   客戶 Email (必填)\n        *   客戶電話 (必填)\n        *   預約的服務名稱 (必填)  (改為服務名稱)\n        *   預約日期和時間 (必填)\n        *   預約人數 (選填，預設為 1)\n    *   SQL 範例：\n        ```sql\n        SELECT create_booking(p_customer_name => '王小明', p_customer_email => 'wang.xiaoming@example.com', p_customer_phone => '0912345678', p_business_id => '{{ $('Supabase').item.json.id }}', p_service_name => '精緻花藝體驗課程', p_booking_start_time => '2025-03-06 14:00:00+08', p_number_of_people => 2);\n        ```\n當課程成功預約後，新增資訊到google日曆        \n\n2.  cancel_booking：取消預約\n    *   說明：用於取消現有的課程預約。\n    *   你需要先向用戶取得以下資訊：\n        *   預約 ID (必填，如果你不知道ID，就先請用戶提供你電話號碼，並使用get_bookings_by_customer_phone去取得id填入，你一定要去取得，不能用null或\"\"，你有權限直接使用工具，不需取得用戶同意) \n    *   SQL 範例：\n        ```sql\n        SELECT cancel_booking(p_booking_id => 'f1e2d3c4-b5a6-9870-4321-0987654321fe');\n        ```\n當課程成功取消後，刪除google日曆中的行程\n\n3.  update_booking：修改預約\n    *   說明：用於修改現有預約的資訊。您只需要提供預約 ID 以及您想要修改的項目和新值。未提供的項目將保持不變。\n    *   參數：\n        *   p_booking_id：預約 ID (必填) \n        *   p_new_date：新的預約日期 (選填，YYYY-MM-DD 格式)\n        *   p_new_period_name：新的時段名稱 (選填，例如 \"上午\", \"下午\")\n        *   p_new_service_name：新的服務名稱 (選填)  (改為服務名稱)\n        *   p_new_number_of_people：新的預約人數 (選填)\n        *   p_new_phone：新的電話號碼 (選填)\n        *   p_new_email：新的電子郵件 (選填)\n    *   SQL 範例 (僅修改預約日期和人數):\n        ```sql\n        SELECT update_booking(p_booking_id => 'f1e2d3c4-b5a6-9870-4321-0987654321fe', p_new_date => '2025-03-10', p_new_number_of_people => 3);\n        ```\n     *  SQL 範例 (修改預約服務):\n        ```sql\n        SELECT update_booking(p_booking_id => 'f1e2d3c4-b5a6-9870-4321-0987654321fe', p_new_service_name => '香氛蠟燭體驗');\n        ```\n當課程成功修改後，修改google日曆中的活動\n\n4.  get_period_availability_by_date：查詢特定日期的可用時段\n    *   說明：用於查詢 *一或多個日期* 的 *所有* 可用時段 (不指定特定服務)。\n    *   你需要先向用戶取得以下資訊：\n        *   要查詢的日期 (必填，可以是一個或多個日期，用陣列表示)。\n    *   SQL 範例：\n        ```sql\n        SELECT * FROM get_period_availability_by_date(p_business_id => '{{ $('Supabase').item.json.id }}', p_booking_dates => ARRAY['2025-03-24', '2025-03-26']::date[]);\n        ```\n\n5.  get_period_availability_by_service：查詢特定服務的可用時段\n    *   說明：用於查詢 *特定服務* 在 *一或多個日期* 的可用時段。\n    *   你需要先向用戶取得以下資訊：\n        *   要查詢的服務名稱 (必填)。\n        *   要查詢的日期 (必填，可以是一個或多個日期，用陣列表示)。\n    *   SQL 範例：\n        ```sql\n        SELECT * FROM get_period_availability_by_service(p_business_id => '{{ $('Supabase').item.json.id }}', p_service_name => '花藝體驗課程', p_booking_dates => ARRAY['2025-03-08', '2025-03-10']::date[]);\n        ```\n\n6.  get_detailed_availability：查詢特定日期和時段的詳細預約情況\n    *   說明：用於查詢 *特定日期* 和 *特定時段* 的詳細預約資訊 (包含已預約的客戶資訊)。\n    *   你需要先向用戶取得以下資訊：\n        *   要查詢的日期 (必填)。\n        *   要查詢的時段名稱 (必填，例如 \"上午\"、\"下午\")。\n    *   SQL 範例：\n        ```sql\n        SELECT * FROM get_detailed_availability(p_business_id => '{{ $('Supabase').item.json.id }}', p_booking_date => '2025-03-05', p_period_name => '上午');\n        ```\n\n7.  get_bookings_by_customer_email：查詢客戶的預約記錄 (使用 Email)\n    *   說明：用於查詢 *特定客戶* 的所有預約記錄 (使用 Email)。\n    *   你需要先向用戶取得以下資訊：\n        *   客戶的 Email (必填)。\n    *   SQL 範例：\n        ```sql\n        SELECT * FROM get_bookings_by_customer_email(p_customer_email => 'abc@example.com');\n        ```\n\n8.  get_bookings_by_customer_phone：查詢客戶的預約記錄 (使用電話)\n    *   說明：用於查詢 *特定客戶* 的所有預約記錄 (使用電話號碼)。\n    *   你需要先向用戶取得以下資訊：\n        *   客戶的電話號碼 (必填)。\n    *   SQL 範例：\n        ```sql\n        SELECT * FROM get_bookings_by_customer_phone(p_customer_phone => '0987654321');\n        ```\n\n9. get_booking_details：查詢預約詳細資訊\n   *   說明：用於查詢 *特定預約* 的所有詳細資訊。\n   *   你需要先向用戶取得以下資訊：\n   *   預約 ID (必填) *或* 提供足以識別預約的資訊 (例如：預約日期、時間、客戶姓名/電話)。\n   *   SQL 範例：\n       ```sql\n       SELECT * FROM get_booking_details(p_booking_id => 'f1e2d3c4-b5a6-9870-4321-0987654321fe');\n       ```\n\n10. create_service：新增服務項目\n    * 說明：用於新增服務項目\n    * 你需要先向用戶取得以下資訊：\n      * 服務項目名稱 (必填)\n      * 服務項目描述 (選填)\n      * 服務項目時長 (必填，分鐘)\n      * 服務項目價格 (選填)\n      * 服務項目最大容量 (必填)\n      * 服務提前預約時間 (選填，例如 \"2小時\"、\"30分鐘\"、\"1天\")\n    * SQL範例：\n     ```sql\n     SELECT create_service(p_business_id => '{{ $('Supabase').item.json.id }}', p_name => '香氛蠟燭DIY', p_description => '客製化香氛蠟燭課程', p_duration => 90, p_price => 800, p_max_capacity => 10, p_min_booking_lead_time => '3 hours');\n     ```\n\n11. update_service：修改服務項目\n    * 說明：用於修改服務項目。您可以透過服務名稱或ID修改。\n    * 你需要先向用戶取得以下資訊：\n      * 服務項目名稱/ID (必填)\n      * 服務項目描述 (選填，若要修改請提供新描述)\n      * 服務項目時長 (選填，若要修改請提供新的時長分鐘數)\n      * 服務項目價格 (選填，若要修改請提供新的價格)\n      * 服務項目最大容量 (選填，若要修改請提供新的最大人數)\n      * 服務提前預約時間 (選填，若要修改請提供新的提前預約時間，例如 \"2小時\"、\"1天\")\n      * 服務項目狀態 (選填，若要修改請提供 'true' 代表啟用 或 'false' 代表停用)\n    * SQL範例 (修改時長和提前預約時間):\n     ```sql\n     SELECT update_service(p_business_id => '{{ $('Supabase').item.json.id }}', p_service_name => '精緻花藝體驗課程', p_duration => 150, p_min_booking_lead_time => '48 hours');\n     ```\n    * SQL範例 (修改服務名稱):\n     ```sql\n     SELECT update_service(p_business_id => '{{ $('Supabase').item.json.id }}', p_service_name => '精緻花藝體驗課程', p_name => '進階花藝設計');\n     ```\n\n12. delete_service：停用服務項目\n    * 說明: 用於將服務項目設定為停用\n    * 你需要先向用戶取得以下資訊：\n      * 服務名稱 (必填) (改為服務名稱)\n    * SQL範例：\n     ```sql\n     SELECT delete_service(p_business_id => '{{ $('Supabase').item.json.id }}', p_service_name => '精緻花藝體驗課程');\n     ```\n\n13. get_all_services：查詢所有服務項目\n    * 說明: 用於查詢所有服務項目(包含停用和未停用的)\n    * SQL範例：\n     ```sql\n     SELECT * FROM get_all_services(p_business_id => '{{ $('Supabase').item.json.id }}', p_include_inactive => true);\n     ```\n\n14. create_period：新增時段\n    * 說明：用於新增時段\n    * 你需要先向用戶取得以下資訊：\n        * 時段名稱 (必填)\n        * 時段開始時間 (必填，HH:MM:SS)\n        * 時段結束時間 (必填，HH:MM:SS)\n        * 時段最大容量 (必填)\n    * SQL範例：\n     ```sql\n     SELECT create_period(p_business_id => '{{ $('Supabase').item.json.id }}', p_name => '上午', p_start_time => '09:00:00', p_end_time => '12:00:00', p_max_capacity => 10);\n     ```\n\n15. update_period：修改時段\n    * 說明： 用於修改現有時段的資訊。您只需要提供時段 ID 以及您想要修改的項目和新值。未提供的項目將保持不變。\n    * 你需要先向用戶取得以下資訊：\n        * 時段 ID (必填，如果你不知道ID，就先使用get_all_periods去取得id填入，你一定要去取得，不能用null或\"\"，你有權限直接使用工具，不需取得用戶同意)\n        * 時段名稱 (選填，若要修改請提供新名稱)\n        * 時段開始時間 (選填，若要修改請提供新的開始時間，HH:MM:SS 格式)\n        * 時段結束時間 (選填，若要修改請提供新的結束時間，HH:MM:SS 格式)\n        * 時段最大容量 (選填，若要修改請提供新的最大人數)\n        * 時段狀態 (選填，若要修改請提供 '啟用' 或 '停用' 狀態)\n    * SQL範例 (僅修改最大容量):\n    ```sql\n    SELECT update_period(p_period_id => 'b7c8d9e0-f1a2-3456-7890-abcdef012345', p_max_capacity => 15);\n    ```\n\n16. delete_period：停用時段\n    * 說明: 用於將時段設定為停用\n    * 你需要先向用戶取得以下資訊：\n      * 時段 ID (必填，如果你不知道ID，就先使用get_all_periods去取得id填入，你一定要去取得，不能用null或\"\"，你有權限直接使用工具，不需取得用戶同意)\n    * SQL範例：\n     ```sql\n     SELECT delete_period(p_period_id => 'b7c8d9e0-f1a2-3456-7890-abcdef012345');\n     ```\n\n17. get_all_periods：查詢所有時段\n    * 說明: 用於查詢所有時段(包含停用和未停用的)\n    * SQL範例：\n     ```sql\n      SELECT * FROM get_all_periods(p_business_id => '{{ $('Supabase').item.json.id }}', p_include_inactive => true);\n     ```\n\n18. create_service_period_restriction：建立服務時段限制\n    * 說明：用於設定特定服務在特定時段是否允許預約\n    * 你需要先向用戶取得以下資訊：\n        * 服務名稱 (必填) (改為服務名稱)\n        * 時段ID (必填，如果你不知道ID，就先使用get_all_periods去取得id填入，你一定要去取得，不能用null或\"\"，你有權限直接使用工具，不需取得用戶同意)\n        * 是否允許 (選填，預設為true)\n    * SQL範例：\n     ```sql\n     SELECT create_service_period_restriction(p_business_id => '{{ $('Supabase').item.json.id }}', p_service_name => '精緻花藝體驗課程', p_period_id => 'b1c2d3e4-f5g6-7890-1234-567890abcdef', p_is_allowed => true);\n     ```\n\n19. update_service_period_restriction：更新服務時段限制\n    * 說明：用於更新已存在的服務時段限制\n    * 你需要先向用戶取得以下資訊：\n        * 限制ID (必填)\n        * 是否允許 (必填)\n    * SQL範例：\n     ```sql\n     SELECT update_service_period_restriction(p_restriction_id => 'c1d2e3f4-g5h6-7890-1234-567890abcdef', p_is_allowed => false);\n     ```\n\n20. delete_service_period_restriction：刪除服務時段限制\n    * 說明：用於移除服務時段限制\n    * 你需要先向用戶取得以下資訊：\n        * 服務名稱 (必填) (改為服務名稱)\n        * 時段ID (必填，如果你不知道ID，就先使用get_all_periods去取得id填入，你一定要去取得，不能用null或\"\"，你有權限直接使用工具，不需取得用戶同意)\n    * SQL範例：\n     ```sql\n     SELECT delete_service_period_restriction(p_business_id => '{{ $('Supabase').item.json.id }}', p_service_name => '精緻花藝體驗課程', p_period_id => 'b1c2d3e4-f5g6-7890-1234-567890abcdef');\n     ```\n\n21. get_service_period_restrictions：查詢服務時段限制\n    * 說明：用於查詢特定服務的所有時段限制\n    * 你需要先向用戶取得以下資訊：\n        * 服務名稱 (必填) (改為服務名稱)\n    * SQL範例：\n     ```sql\n     SELECT * FROM get_service_period_restrictions(p_business_id => '{{ $('Supabase').item.json.id }}', p_service_name => '精緻花藝體驗課程');\n     ```\n\n22. update_business_booking_settings：更新商家預約設定\n    * 說明：用於設定商家的預約規則，例如客戶需要提前多久預約\n    * 你需要先向用戶取得以下資訊：\n        * 提前預約時間 (必填，格式為時間間隔，例如 \"24 hours\"、\"2 hours\"、\"30 minutes\"、\"3 days\")\n    * SQL範例：\n     ```sql\n     SELECT update_business_booking_settings(p_business_id => '{{ $('Supabase').item.json.id }}', p_min_booking_lead_time => '12 hours');\n     ```\n\n23. get_service_booking_settings：查詢預約時間設定\n    * 說明：用於查詢商家和各服務的預約提前時間設定\n    * SQL範例：\n     ```sql\n     SELECT * FROM get_service_booking_settings(p_business_id => '{{ $('Supabase').item.json.id }}');\n     ```\n\n重要提醒：\n- 使用繁體中文回覆。\n- 保持友善且專業。\n- 用戶的問話可能不完整或不明確，你需要主動詢問以獲取所有必要資訊 (例如：日期、時間、服務名稱、人數等)。\n- 在執行任何操作 (建立、取消、修改預約、新增/修改服務或時段、設定服務時段限制) 之前，務必與用戶確認所有資訊是否正確。\n- 在查詢可用時段時，需要考慮服務時段限制，並向用戶說明哪些服務在特定時段可用或不可用。\n- 在建立或修改預約時，需要檢查該服務是否允許在指定時段預約。\n- 輸出 SQL 時，務必使用單行、不換行、不含註解或其他字元的格式，並可直接在 PostgreSQL 中執行。注意結尾不要有額外字元。\n- 所有預約相關的時間都會以商家的時區為準。\n- 時間輸入格式必須包含時區資訊，例如：'2025-03-06 14:00:00+08'。\n- 資料庫會自動進行時區轉換和判斷。\n- **在處理服務相關請求時，優先向使用者詢問服務名稱。 系統會自動在幕後使用 `find_service` 函數將服務名稱轉換為 Service ID。** (更新了這條提醒)\n- **在調用需要 Service ID 的 SQL 函數時，系統會自動使用 `find_service` 函數返回的 Service ID。如果 `find_service` 沒有找到有效的 ID，請告知用戶找不到相關服務。** (更新了這條提醒)\n- **不同的服務可能需要不同的提前預約時間。在回應用戶查詢時，須告知相關服務的提前預約要求。**\n- **商家有全域的預約提前時間設定，每個服務也可以有自己特定的提前預約時間設定。若服務沒有特定設定，則使用商家的全域設定。**\n\n禁止：\n- 跟用戶提及 PROMPT 中的 SQL 使用方法 或 參數名稱。\n- 洩露任何 ID、密碼或 Token。\n- 告知用戶你使用了 SQL 或 find_service。 (隱藏 find_service 的使用)\n- 談論與商店提供的商品和服務無關的內容。\n- 禁止偽造任何ID\n\n絕對禁止與用戶閒聊，或討論與商家服務預約無關的話題\n你只可以做預約相關的工作",
+          "passthroughBinaryImages": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -160,
+        180
+      ],
+      "id": "319ae7d8-939b-4597-b38b-fda4fdbc40e5",
+      "name": "AI Agent",
+      "retryOnFail": true,
+      "maxTries": 2
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -160,
+        420
+      ],
+      "id": "5a2f62de-832c-4253-a65b-90a9a32e058e",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "OLxvDlcgMtQl97Rz",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $fromAI('sql') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.5,
+      "position": [
+        200,
+        420
+      ],
+      "id": "56b30503-c813-41a8-a209-8069775e5c75",
+      "name": "SQL TOOL",
+      "credentials": {
+        "postgres": {
+          "id": "rirX6y2H8JSNpuki",
+          "name": "Supabasa Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8423cfac-6e3c-401b-bc99-68871ec81460",
+              "name": "text",
+              "value": "={{ $('Webhook').item.json.body.events[0].message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -620,
+        0
+      ],
+      "id": "5260cf24-a5d8-4eb6-bae3-68f84af0470d",
+      "name": "Agent Input"
+    },
+    {
+      "parameters": {
+        "operation": "getProfile",
+        "userId": "={{ $('Webhook').item.json.body.events[0].source.userId }}"
+      },
+      "type": "n8n-nodes-linewebhook.LineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -780,
+        0
+      ],
+      "id": "5e08ee81-4c9f-48ee-af0d-c6efbc31379d",
+      "name": "取得User資料",
+      "credentials": {
+        "lineMessagingAuthApi": {
+          "id": "PkMDUXkMmhqF6Ocp",
+          "name": "Vous Aimer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getMessageContent",
+        "messageId": "={{ $('Webhook').item.json.body.events[0].message.id }}"
+      },
+      "type": "n8n-nodes-linewebhook.LineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -780,
+        200
+      ],
+      "id": "a99544fa-ef63-4140-817c-cee71a6f33a0",
+      "name": "取得語音",
+      "credentials": {
+        "lineMessagingAuthApi": {
+          "id": "PkMDUXkMmhqF6Ocp",
+          "name": "Vous Aimer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "binaryPropertyName": "=data",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -620,
+        200
+      ],
+      "id": "c49c352b-4eda-4736-973d-5073764d0386",
+      "name": "語音轉文字",
+      "credentials": {
+        "openAiApi": {
+          "id": "OLxvDlcgMtQl97Rz",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "vousaimer",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1560,
+        200
+      ],
+      "id": "3f712d70-4a7e-4317-b7b7-4968b6f1cb2e",
+      "name": "Webhook",
+      "webhookId": "faecd5d1-41f2-4c95-acf6-89dd3687d99c"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.body.events[0].message.type }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "2bc82b3c-0834-48f3-b53b-368ce8b684e7",
+                    "leftValue": "={{ $('Webhook').item.json.body.events[0].message.type }}",
+                    "rightValue": "audio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "fbe1f817-54d0-4256-b35a-90b28b484d97",
+                    "leftValue": "={{ $('Webhook').item.json.body.events[0].message.type }}",
+                    "rightValue": "image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "image"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1120,
+        200
+      ],
+      "id": "fc85b0fb-e05a-40e6-85c0-5cdbe38784aa",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "getProfile",
+        "userId": "={{ $('Webhook').item.json.body.events[0].source.userId }}"
+      },
+      "type": "n8n-nodes-linewebhook.LineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -920,
+        200
+      ],
+      "id": "7241ec21-3822-4b73-a8b0-145e7db72a4b",
+      "name": "LineMessaging",
+      "credentials": {
+        "lineMessagingAuthApi": {
+          "id": "PkMDUXkMmhqF6Ocp",
+          "name": "Vous Aimer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getMessageContent",
+        "messageId": "={{ $('Webhook').item.json.body.events[0].message.id }}"
+      },
+      "type": "n8n-nodes-linewebhook.LineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -780,
+        380
+      ],
+      "id": "2c14fd09-c4db-4a40-be12-dc5f175b0164",
+      "name": "取得圖片",
+      "credentials": {
+        "lineMessagingAuthApi": {
+          "id": "PkMDUXkMmhqF6Ocp",
+          "name": "Vous Aimer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "n8n_booking_businesses",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "linebot_destination",
+              "keyValue": "={{ $json.body.destination }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1340,
+        200
+      ],
+      "id": "4bd35ae1-f58e-4997-a565-69b01f4914cc",
+      "name": "Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "NNEctpAhDK82HcYw",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.output }}"
+      },
+      "type": "n8n-nodes-linewebhook.LineMessageNode",
+      "typeVersion": 1,
+      "position": [
+        900,
+        180
+      ],
+      "id": "5354f57b-032e-4dcd-89ef-3afe9567463d",
+      "name": "訊息種類"
+    },
+    {
+      "parameters": {
+        "message": "={{ $json.message }}",
+        "replyToken": "={{ $('Webhook').item.json.body.events[0].replyToken }}"
+      },
+      "type": "n8n-nodes-linewebhook.LineMessaging",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        180
+      ],
+      "id": "e5e33fb0-d4a9-450c-8fdd-ba3c343a69cf",
+      "name": "傳送訊息",
+      "credentials": {
+        "lineMessagingAuthApi": {
+          "id": "PkMDUXkMmhqF6Ocp",
+          "name": "Vous Aimer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "amigo.golf@gmail.com",
+          "mode": "list",
+          "cachedResultName": "Golf Amigo"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "useDefaultReminders": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Use_Default_Reminders', ``, 'boolean') }}",
+        "additionalFields": {
+          "attendees": [
+            "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Attendees', ``, 'string') }}"
+          ],
+          "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', ``, 'string') }}",
+          "location": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Location', ``, 'string') }}",
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        60,
+        420
+      ],
+      "id": "b5f2258b-50cc-473c-b494-f249ce91829f",
+      "name": "Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "qNSZzSNvk8oHKsBv",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "08b60e13-aa48-4ab2-9cc9-2461be3e2dc2",
+              "name": "body.events[0].message.text",
+              "value": "={{ $('Webhook').item.json.body.events[0].message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "3f874c93-1cb8-48f8-9560-cb8cb4cba2fe",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "85c1c3bb-522c-4225-bfc4-ba16c972922e",
+              "name": "userId",
+              "value": "={{ $('取得User資料').item.json.userId }}",
+              "type": "string"
+            },
+            {
+              "id": "54a658de-53ea-4126-8247-1029ba746ce0",
+              "name": "timeStamp",
+              "value": "={{ $now.setZone($('Supabase').item.json.timezone) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        460
+      ],
+      "id": "c762abbb-00f9-459c-ac07-81580ebe3872",
+      "name": "Edit Fields",
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": "n8n_vectors_vousaimer",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1,
+      "position": [
+        700,
+        460
+      ],
+      "id": "126745a2-9b5b-4fd0-a114-bab2389d99dc",
+      "name": "Postgres PGVector Store",
+      "credentials": {
+        "postgres": {
+          "id": "rirX6y2H8JSNpuki",
+          "name": "Supabasa Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        660
+      ],
+      "id": "927ccd84-d5cc-4d5e-ba7d-79133f094b10",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "OLxvDlcgMtQl97Rz",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        760,
+        700
+      ],
+      "id": "9b362e39-cce7-44b7-a77a-b704c84f59f9",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 150,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        780,
+        900
+      ],
+      "id": "23989efc-8de7-4316-a02d-577b6b15bc87",
+      "name": "Recursive Character Text Splitter1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.events[0].source.userId }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -60,
+        420
+      ],
+      "id": "2d9ccc5f-2396-4c6f-ba74-9daac8081234",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "sXoGg8S9O6gPS7yO",
+          "name": "Zeabur Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "訊息種類",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SQL TOOL": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得User資料": {
+      "main": [
+        [
+          {
+            "node": "Agent Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得語音": {
+      "main": [
+        [
+          {
+            "node": "語音轉文字",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "取得User資料",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "LineMessaging",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "取得圖片",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LineMessaging": {
+      "main": [
+        [
+          {
+            "node": "取得語音",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent Input": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "語音轉文字": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得圖片": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "訊息種類": {
+      "main": [
+        [
+          {
+            "node": "傳送訊息",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter1": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e0a06548-9ed1-43e0-a4e8-d76f087806b9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "44d8cd01c3e296fac36e019b696666ef465263f58c21082d7172651215b897d2"
+  },
+  "id": "W5efr9oulEXgAg4i",
+  "tags": []
+}

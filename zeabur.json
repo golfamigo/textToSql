@@ -1,0 +1,8 @@
+{
+  "run": {
+    "cmd": "python main.py"
+  },
+  "env": {
+    "PORT": "8000"
+  }
+}
