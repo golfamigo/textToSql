@@ -25,7 +25,7 @@ class SimilarQuery(BaseModel):
     query: str = Field(description="原始自然語言查詢")
     sql: str = Field(description="SQL 查詢")
     similarity: float = Field(description="相似度分數 (0-1)")
-    timestamp: datetime = Field(description="查詢時間")
+    timestamp: Union[datetime, str] = Field(description="查詢時間")
 
 
 class SQLResult(BaseModel):
@@ -107,7 +107,7 @@ class TextToSQLService:
                             query=result["query"],
                             sql=result["sql"],
                             similarity=result["similarity"],
-                            timestamp=result["timestamp"]
+                            timestamp=result["timestamp"] if isinstance(result["timestamp"], str) else result["timestamp"].isoformat()
                         )
                         for result in similar_results
                         if result["similarity"] > 0.7  # 只返回相似度大於 0.7 的查詢
