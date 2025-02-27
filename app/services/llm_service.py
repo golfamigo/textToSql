@@ -1,10 +1,11 @@
-from typing import Dict, Any, List, Optional, Union, Tuple
+import typing
 import os
 import json
 import time
 from uuid import uuid4
 import logging
 from abc import ABC, abstractmethod
+from typing import Dict, Any, List, Optional, Union, Tuple
 
 from ..utils.config import ModelProvider, ModelConfig, settings
 
@@ -19,7 +20,7 @@ class LLMResponse:
         self, 
         content: str, 
         model: str,
-        token_usage: Dict[str, int] = None,
+        token_usage: Optional[Dict[str, int]] = None, # Modified type hint to Optional[Dict[str, int]]
         raw_response: Any = None,
         error: Optional[str] = None,
         latency: float = 0.0
@@ -52,11 +53,10 @@ class LLMResponse:
     def get_parsed_json(self) -> Dict[str, Any]:
         """嘗試解析 JSON 內容"""
         try:
-            return json.loads(self.content)
+            return typing.cast(Dict[str, Any], json.loads(self.content)) # Added type cast here
         except json.JSONDecodeError as e:
             logger.error(f"JSON 解析錯誤: {e}")
-            return {"error": f"無法解析 JSON: {str(e)}"}
-
+            return {"error": f"無法解析 JSON: {str(e)}"} # Added explicit return type annotation
 
 class LLMProvider(ABC):
     """語言模型提供者基類"""
@@ -496,7 +496,7 @@ class LLMService:
         
         # 如果提供者已經被初始化過，則直接返回
         if model_name in self.providers:
-            return self.providers[model_name]
+            return typing.cast(LLMProvider, self.providers[model_name]) # Added type assertion
         
         # 獲取模型配置
         model_config = settings.get_model_config(model_name)
@@ -506,6 +506,9 @@ class LLMService:
         if not provider_class:
             raise ValueError(f"不支持的模型提供者: {model_config.provider}")
         
+        if provider_class == LLMProvider: # Added check to prevent abstract class instantiation
+            raise ValueError(f"Invalid provider class: LLMProvider is an abstract class")
+
         # 初始化提供者
         try:
             provider = provider_class(model_config)
