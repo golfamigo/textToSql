@@ -6,7 +6,7 @@ from .base import BaseDBModel
 
 
 class BusinessModel(BaseDBModel):
-    """商家資訊模型"""
+    """商家資訊模型 - 對應 n8n_booking_businesses 表"""
     
     name: str = Field(description="商家名稱")
     description: Optional[str] = Field(default=None, description="商家描述")
@@ -28,6 +28,9 @@ class BusinessModel(BaseDBModel):
         if v is None:
             return None
         return v
+        
+    created_at: Optional[datetime] = Field(default=None, description="創建時間")
+    updated_at: Optional[datetime] = Field(default=None, description="更新時間")
     
     model_config = {
         "json_schema_extra": {
@@ -38,7 +41,19 @@ class BusinessModel(BaseDBModel):
                 "address": "台北市信義區101號",
                 "contact_email": "contact@salon.example.com",
                 "contact_phone": "02-1234-5678",
-                "timezone": "Asia/Taipei"
+                "timezone": "Asia/Taipei",
+                "business_hours": {
+                    "monday": {"open": "09:00", "close": "18:00"},
+                    "tuesday": {"open": "09:00", "close": "18:00"},
+                    "wednesday": {"open": "09:00", "close": "18:00"},
+                    "thursday": {"open": "09:00", "close": "18:00"},
+                    "friday": {"open": "09:00", "close": "18:00"},
+                    "saturday": {"open": "10:00", "close": "17:00"},
+                    "sunday": {"open": null, "close": null}
+                },
+                "min_booking_lead_time": "PT2H",
+                "subscription_status": "active",
+                "subscription_end_date": "2025-12-31"
             }
         }
     }

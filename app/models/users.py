@@ -14,30 +14,35 @@ class UserRole(str, Enum):
 
 
 class UserModel(BaseDBModel):
-    """使用者模型"""
+    """使用者模型 - 對應 n8n_booking_users 表"""
     
-    business_id: UUID = Field(description="所屬商家ID")
-    email: str = Field(description="使用者信箱")
     name: str = Field(description="使用者名稱")
+    email: Optional[str] = Field(default=None, description="使用者信箱")
     phone: Optional[str] = Field(default=None, description="電話號碼")
-    role: UserRole = Field(description="使用者角色")
-    is_active: bool = Field(default=True, description="是否啟用")
-    password_hash: Optional[str] = Field(default=None, description="密碼雜湊")
-    profile_data: Optional[Dict[str, Any]] = Field(default=None, description="個人資料")
-    last_login: Optional[datetime] = Field(default=None, description="最後登入時間")
-    email_verified: bool = Field(default=False, description="電子郵件是否已驗證")
     line_user_id: Optional[str] = Field(default=None, description="Line 使用者 ID")
+    role: UserRole = Field(description="使用者角色")
+    password_hash: Optional[str] = Field(default=None, description="密碼雜湊")
+    business_id: Optional[UUID] = Field(default=None, description="所屬商家ID")
+    is_active: bool = Field(default=True, description="是否啟用")
+    notes: Optional[str] = Field(default=None, description="備註")
+    settings: Optional[Dict[str, Any]] = Field(default=None, description="使用者設定")
+    created_at: Optional[datetime] = Field(default=None, description="創建時間")
+    updated_at: Optional[datetime] = Field(default=None, description="更新時間")
+    last_login: Optional[datetime] = Field(default=None, description="最後登入時間")
     
     model_config = {
         "json_schema_extra": {
             "example": {
                 "id": "123e4567-e89b-12d3-a456-426614174001",
-                "business_id": "123e4567-e89b-12d3-a456-426614174000",
-                "email": "user@example.com",
                 "name": "張小明",
+                "email": "user@example.com",
                 "phone": "0912345678",
                 "role": "staff",
-                "is_active": True
+                "business_id": "123e4567-e89b-12d3-a456-426614174000",
+                "is_active": True,
+                "line_user_id": "U1234567890abcdef1234567890abcdef",
+                "notes": "資深造型師",
+                "settings": {"notifications": {"email": true, "sms": false}}
             }
         }
     }

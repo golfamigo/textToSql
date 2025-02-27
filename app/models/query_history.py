@@ -6,7 +6,7 @@ from .base import BaseDBModel
 
 
 class QueryHistoryModel(BaseDBModel):
-    """查詢歷史模型"""
+    """查詢歷史模型 - 獨立模型，無對應資料庫表"""
     
     user_query: str = Field(description="用戶的自然語言查詢")
     generated_sql: str = Field(description="生成的 SQL 查詢")
@@ -54,7 +54,7 @@ class QueryHistoryModel(BaseDBModel):
 
 
 class QueryTemplateModel(BaseDBModel):
-    """查詢模板模型"""
+    """查詢模板模型 - 獨立模型，無對應資料庫表"""
     
     name: str = Field(description="模板名稱")
     description: Optional[str] = Field(default=None, description="模板描述")
