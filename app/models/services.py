@@ -19,7 +19,7 @@ class ServiceModel(BaseDBModel):
     created_at: Optional[datetime] = Field(default=None, description="創建時間")
     updated_at: Optional[datetime] = Field(default=None, description="更新時間")
     business_hours_override_id: Optional[UUID] = Field(default=None, description="營業時間覆蓋ID")
-    min_booking_lead_time: Optional[str] = Field(default=None, description="最小預約提前時間")
+    min_booking_lead_time: Optional[str] = Field(default=None, description="最小預約提前時間 (interval 格式，如 '2 hours', '1 day')")
     
     model_config = {
         "json_schema_extra": {

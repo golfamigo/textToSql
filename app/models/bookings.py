@@ -20,7 +20,7 @@ class BookingModel(BaseDBModel):
     
     booking_created_at: Optional[datetime] = Field(default=None, description="預約創建時間")
     booking_date: date = Field(description="預約日期")
-    booking_duration: Optional[str] = Field(default=None, description="預約時長")
+    booking_duration: Optional[str] = Field(default=None, description="預約時長 (interval 格式，如 '1 hour', '30 minutes')")
     booking_start_time: time = Field(description="預約開始時間")
     business_id: UUID = Field(description="所屬商家ID")
     customer_email: str = Field(description="客戶電子郵件")
@@ -35,6 +35,7 @@ class BookingModel(BaseDBModel):
     service_id: UUID = Field(description="服務項目ID")
     staff_id: Optional[UUID] = Field(default=None, description="服務人員ID")
     status: str = Field(default="confirmed", description="預約狀態")
+    created_at: Optional[datetime] = Field(default=None, description="創建時間")
     updated_at: Optional[datetime] = Field(default=None, description="更新時間")
     user_id: Optional[UUID] = Field(default=None, description="用戶ID")
     

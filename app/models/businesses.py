@@ -15,7 +15,7 @@ class BusinessModel(BaseDBModel):
     contact_phone: Optional[str] = Field(default=None, description="聯絡電話")
     business_hours: Optional[Dict[str, Any]] = Field(default=None, description="營業時間")
     timezone: str = Field(default="Asia/Taipei", description="時區")
-    min_booking_lead_time: Optional[timedelta] = Field(default=None, description="最小預約提前時間")
+    min_booking_lead_time: Optional[str] = Field(default=None, description="最小預約提前時間 (interval 格式，如 '2 hours', '1 day')")
     owner_id: Optional[UUID] = Field(default=None, description="擁有者ID")
     settings: Optional[Dict[str, Any]] = Field(default=None, description="商家設定")
     subscription_status: Optional[str] = Field(default=None, description="訂閱狀態")
