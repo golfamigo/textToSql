@@ -4,7 +4,7 @@ from .users import UserModel, UserRole
 from .services import ServiceModel
 from .time_periods import TimePeriodModel, WeekDay
 from .bookings import BookingModel, BookingStatus
-from .query_history import QueryHistoryModel
+from .query_history import QueryHistoryModel, QueryTemplateModel
 
 __all__ = [
     "BaseDBModel",
@@ -16,5 +16,6 @@ __all__ = [
     "WeekDay",
     "BookingModel",
     "BookingStatus",
-    "QueryHistoryModel"
+    "QueryHistoryModel",
+    "QueryTemplateModel"
 ]
