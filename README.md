@@ -19,15 +19,29 @@
 ## 環境設置
 
 1. 安裝依賴項：
-   ```
-   pip install -r requirements.txt
+   ```bash
+   # 安裝基本套件
+   pip install -e .
+
+   # 安裝開發工具
+   pip install -e ".[dev]"
+
+   # 安裝測試工具
+   pip install -e ".[test]"
    ```
 
 2. 設置環境變數：
    創建一個 `.env` 文件並添加：
    ```
    OPENAI_API_KEY=your_api_key_here
+   ANTHROPIC_API_KEY=your_anthropic_api_key
    DATABASE_URL=postgresql://user:password@localhost:5432/n8n_booking
+   ```
+
+3. 安裝開發工具:
+   ```bash
+   # 安裝 pre-commit 勾子
+   pre-commit install
    ```
 
 ## 專案結構
@@ -95,6 +109,41 @@
 - 禁止執行修改數據的查詢（INSERT、UPDATE、DELETE等）
 - 所有查詢執行前都會通過安全檢查
 - 建議在開發環境中使用，或為生產環境設置只讀數據庫用戶
+
+## 開發者指南
+
+### 程式碼風格與檢查
+
+本專案使用多種工具確保代碼質量：
+
+```bash
+# 格式化代碼
+black app
+isort app
+
+# 靜態類型檢查
+mypy app
+
+# 代碼風格檢查
+flake8 app
+pylint app
+
+# 使用 ruff 進行快速檢查
+ruff check app
+
+# 運行測試
+pytest
+```
+
+### CI/CD 流程
+
+本專案使用 GitHub Actions 進行持續整合：
+
+- 每次 push 和 pull request 時自動運行代碼檢查和測試
+- 程式碼風格檢查 (black, isort)
+- 靜態類型檢查 (mypy)
+- 代碼品質檢查 (flake8, pylint, ruff)
+- 自動化測試 (pytest)
 
 ## 案例示範
 

@@ -34,6 +34,15 @@ setup(
             "pytest>=7.0.0",
             "pytest-cov>=4.0.0",
         ],
+        "dev": [
+            "black>=23.10.1",
+            "isort>=5.12.0",
+            "flake8>=6.1.0",
+            "mypy>=1.6.1",
+            "pylint>=3.0.2",
+            "pre-commit>=3.5.0",
+            "ruff>=0.1.3",
+        ],
     },
     entry_points={
         "console_scripts": [
