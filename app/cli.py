@@ -4,7 +4,7 @@ import json
 import os
 from tabulate import tabulate
 from datetime import datetime
-from .services import TextToSQLService
+from .services import TextToSQLService, conversation_manager, visualization_service
 import logging
 from dotenv import load_dotenv
 from rich.console import Console
@@ -194,6 +194,9 @@ def main():
     
     # 初始化服務
     service = TextToSQLService()
+    
+    # 確保服務使用全局 conversation_manager
+    service.conversation_manager = conversation_manager
     
     # 執行對應的命令
     if args.command == 'convert':
@@ -409,6 +412,7 @@ def main():
         
         # 顯示模型性能統計
         elif args.performance:
+            from .services import llm_service
             performance = llm_service.get_model_performance()
             
             if not performance:
@@ -468,7 +472,6 @@ def main():
         
         try:
             # 準備可視化服務並設置輸出目錄
-            from .services import visualization_service
             if args.output:
                 visualization_service.output_dir = args.output
                 os.makedirs(args.output, exist_ok=True)
@@ -555,8 +558,7 @@ def main():
         
         # 顯示特定對話的歷史
         elif args.show:
-            from .services import TextToSQLService
-            service = TextToSQLService()
+            # 使用已初始化的服務實例
             
             # 獲取對話歷史
             conversation_history = service.history_service.get_history_by_conversation(args.show, limit=20)

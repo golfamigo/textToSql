@@ -47,6 +47,7 @@ class QueryRequest(BaseModel):
     execute: bool = Field(default=False, description="是否執行生成的查詢")
     model: Optional[str] = Field(default=None, description="使用的模型名稱")
     find_similar: bool = Field(default=True, description="是否查找相似查詢")
+    session_id: Optional[str] = Field(default=None, description="會話ID，用於對話上下文管理")
     
     @validator('model')
     def validate_model(cls, v):
@@ -111,6 +112,7 @@ async def convert_text_to_sql(request: QueryRequest):
         # 執行查詢
         result = text_to_sql_service.text_to_sql(
             query=request.query, 
+            session_id=request.session_id,
             execute=request.execute,
             find_similar=request.find_similar
         )
