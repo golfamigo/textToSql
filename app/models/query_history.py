@@ -15,7 +15,7 @@ class QueryHistoryModel(BaseDBModel):
     execution_time: Optional[float] = Field(default=None, description="執行時間（毫秒）")
     error_message: Optional[str] = Field(default=None, description="錯誤訊息，如果有的話")
     
-    # 對話支持字段
+    # 對話支持欄位
     conversation_id: Optional[str] = Field(default=None, description="對話ID")
     references_query_id: Optional[str] = Field(default=None, description="參考的查詢ID")
     resolved_query: Optional[str] = Field(default=None, description="解析後的查詢")

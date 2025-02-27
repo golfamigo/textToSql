@@ -45,6 +45,14 @@ class Settings(BaseSettings):
     # 默認模型設定
     default_model: str = os.getenv("DEFAULT_MODEL", "gpt-4o")
     
+    # API Keys
+    openai_api_key: Optional[str] = None
+    anthropic_api_key: Optional[str] = None
+    google_api_key: Optional[str] = None
+    azure_openai_api_key: Optional[str] = None
+    azure_openai_endpoint: Optional[str] = None
+    azure_deployment_name: Optional[str] = None
+    
     # 模型配置
     models: Dict[str, ModelConfig] = {
         # OpenAI 模型
@@ -146,7 +154,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
-        case_sensitive=False
+        case_sensitive=False,
+        extra="allow"
     )
     
     def get_model_config(self, model_name: Optional[str] = None) -> ModelConfig:

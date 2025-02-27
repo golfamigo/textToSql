@@ -34,14 +34,14 @@ BEGIN
             'message', '週期性可用時間必須指定星期幾'
         );
     END IF;
-    
+
     IF NOT p_is_recurring AND p_specific_date IS NULL THEN
         RETURN json_build_object(
             'success', false,
             'message', '非週期性可用時間必須指定具體日期'
         );
     END IF;
-    
+
     -- 插入可用時間記錄
     INSERT INTO n8n_booking_staff_availability (
         staff_id,
@@ -62,7 +62,7 @@ BEGIN
         p_specific_date,
         p_availability_type
     );
-    
+
     RETURN json_build_object(
         'success', true,
         'message', '員工可用時間已成功設置'

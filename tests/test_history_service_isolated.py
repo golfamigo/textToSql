@@ -67,7 +67,7 @@ class MockSession:
 
 
 class MockHistoryService(HistoryService):
-    """模擬歷史服務，避免依賴數據庫和外部文件"""
+    """模擬歷史服務，避免依賴資料庫和外部文件"""
     
     def __init__(self, use_db=True):
         self.use_db = use_db
@@ -80,7 +80,7 @@ class MockHistoryService(HistoryService):
         self.history_file = os.path.join(self.temp_dir.name, "query_history.json")
         self.templates_file = os.path.join(self.temp_dir.name, "query_templates.json")
         
-        # 為數據庫模式設置模擬數據
+        # 為資料庫模式設置模擬數據
         if use_db:
             self.Session = lambda: self.session
     
@@ -112,7 +112,7 @@ class MockHistoryService(HistoryService):
 
 
 class TestHistoryServiceIsolated:
-    """測試歷史服務，使用模擬的數據而非實際數據庫"""
+    """測試歷史服務，使用模擬的數據而非實際資料庫"""
     
     @pytest.fixture
     def history_service(self):

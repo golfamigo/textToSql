@@ -92,9 +92,9 @@ python -m unittest unittest.test_parameterized_queries.TestParameterizedQueries.
    - 測試獲取存在的預約詳情
    - 測試獲取不存在的預約詳情
 
-### 5. 數據庫服務測試 (`test_database_service.py`)
+### 5. 資料庫服務測試 (`test_database_service.py`)
 
-測試數據庫服務層的功能：
+測試資料庫服務層的功能：
 
 1. **查詢執行功能** (`test_execute_query`)
    - 驗證SQL查詢的執行結果

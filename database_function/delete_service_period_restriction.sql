@@ -21,7 +21,7 @@ DECLARE
     v_service_id uuid;
 BEGIN
     -- 查找服務 ID
-    SELECT service_id 
+    SELECT service_id
     FROM find_service(p_business_id => p_business_id, p_service_name => p_service_name)
     INTO v_service_id;
 
@@ -31,7 +31,7 @@ BEGIN
 
     -- 先檢查是否存在相關的未來預約
     IF EXISTS (
-        SELECT 1 
+        SELECT 1
         FROM n8n_booking_bookings b
         WHERE b.service_id = v_service_id  -- 使用找到的 service_id
           AND b.period_id = p_period_id

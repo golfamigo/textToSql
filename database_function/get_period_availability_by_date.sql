@@ -33,7 +33,7 @@ BEGIN
     SELECT min_booking_lead_time INTO v_min_lead_time
     FROM n8n_booking_businesses
     WHERE id = p_business_id;
-    
+
     -- 過濾有效日期
     FOR i IN 1..array_length(p_booking_dates, 1) LOOP
         BEGIN
@@ -57,7 +57,7 @@ BEGIN
             tp.max_capacity,
             COUNT(b.id) AS booked_slots,
             -- 檢查提前預約時間是否足夠
-            (v_current_timestamp + v_min_lead_time) <= 
+            (v_current_timestamp + v_min_lead_time) <=
                 (d.date + tp.start_time::time)::timestamp with time zone AS is_advance_time_met
         FROM
             unnest(v_valid_dates) AS d(date)

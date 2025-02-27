@@ -359,5 +359,5 @@ class VisualizationService:
                 
         return False
 
-# 创建全局可視化服務實例
+# 創建全局可視化服務實例
 visualization_service = VisualizationService()

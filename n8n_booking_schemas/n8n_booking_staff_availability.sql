@@ -15,4 +15,4 @@ CREATE TABLE public.n8n_booking_staff_availability (
     updated_at timestamp with time zone
 );
 
-COMMENT ON TABLE public.n8n_booking_staff_availability IS '员工可用时间表';
+COMMENT ON TABLE public.n8n_booking_staff_availability IS '員工可用時間表';

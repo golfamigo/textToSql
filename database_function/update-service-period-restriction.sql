@@ -18,11 +18,11 @@ DECLARE
     v_current_allowed boolean;
 BEGIN
     -- 檢查限制是否存在
-    SELECT 
+    SELECT
         service_id,
         period_id,
-        is_allowed 
-    INTO 
+        is_allowed
+    INTO
         v_service_id,
         v_period_id,
         v_current_allowed
@@ -40,7 +40,7 @@ BEGIN
     IF p_is_allowed IS NOT NULL AND p_is_allowed != v_current_allowed THEN
         -- 檢查是否有相關的未來預約
         IF EXISTS (
-            SELECT 1 
+            SELECT 1
             FROM n8n_booking_bookings b
             WHERE b.service_id = v_service_id
               AND b.period_id = v_period_id
@@ -55,7 +55,7 @@ BEGIN
 
         -- 更新限制
         UPDATE n8n_booking_service_period_restrictions
-        SET 
+        SET
             is_allowed = p_is_allowed,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = p_restriction_id;

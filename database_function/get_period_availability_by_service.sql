@@ -41,14 +41,14 @@ BEGIN
     INTO v_service_id, v_matched_name;
 
     IF v_service_id IS NULL THEN
-        RETURN QUERY SELECT 
-            NULL::date, 
-            NULL::text, 
-            NULL::time, 
-            NULL::time, 
-            NULL::integer, 
-            NULL::bigint, 
-            NULL::integer, 
+        RETURN QUERY SELECT
+            NULL::date,
+            NULL::text,
+            NULL::time,
+            NULL::time,
+            NULL::integer,
+            NULL::bigint,
+            NULL::integer,
             NULL::boolean,
             NULL::text,
             NULL::boolean,
@@ -56,13 +56,13 @@ BEGIN
         WHERE FALSE;
         RETURN;
     END IF;
-    
+
     -- 獲取服務特定的提前預約時間，若無則使用商家默認設定
     SELECT COALESCE(s.min_booking_lead_time, b.min_booking_lead_time) INTO v_min_lead_time
     FROM n8n_booking_services s
     JOIN n8n_booking_businesses b ON s.business_id = b.id
     WHERE s.id = v_service_id;
-    
+
     -- 過濾有效日期
     FOR i IN 1..array_length(p_booking_dates, 1) LOOP
         BEGIN
@@ -87,7 +87,7 @@ BEGIN
             tp.max_capacity,
             COUNT(b.id) AS booked_slots,
             -- 檢查提前預約時間是否足夠
-            (v_current_timestamp + v_min_lead_time) <= 
+            (v_current_timestamp + v_min_lead_time) <=
                 (d.date + tp.start_time::time)::timestamp with time zone AS is_advance_time_met
         FROM
             unnest(v_valid_dates) AS d(date)
@@ -125,8 +125,8 @@ BEGIN
     FROM
         booking_counts bc
     LEFT JOIN
-        n8n_booking_service_period_restrictions r ON 
-            r.period_id = bc.period_id 
+        n8n_booking_service_period_restrictions r ON
+            r.period_id = bc.period_id
             AND r.service_id = v_service_id
     WHERE
         COALESCE(r.is_allowed, true) = true

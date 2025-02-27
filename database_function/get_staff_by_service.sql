@@ -28,9 +28,9 @@ BEGIN
     IF v_service_id IS NULL THEN
         RAISE EXCEPTION '找不到該服務，請確認服務名稱是否正確';
     END IF;
-    
+
     RETURN QUERY
-    SELECT 
+    SELECT
         u.id AS staff_id,
         u.name AS staff_name,
         ss.is_primary,

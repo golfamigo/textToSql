@@ -49,7 +49,7 @@ BEGIN
             'message', '找不到該服務，請確認服務名稱是否正確'
         );
     END IF;
-    
+
     -- 獲取服務特定的提前預約時間，若無則使用商家默認設定
     SELECT COALESCE(s.min_booking_lead_time, b.min_booking_lead_time) INTO v_min_lead_time
     FROM n8n_booking_services s
@@ -90,7 +90,7 @@ BEGIN
 
     -- 獲取商家時區
     SELECT timezone INTO v_business_timezone
-    FROM n8n_booking_businesses 
+    FROM n8n_booking_businesses
     WHERE id = p_business_id;
 
     IF NOT FOUND THEN
@@ -99,7 +99,7 @@ BEGIN
 
     -- 將UTC時間轉換為商家所在時區的時間
     v_local_time := p_booking_start_time AT TIME ZONE v_business_timezone;
-    
+
     -- 檢查服務是否存在及其容量
     SELECT max_capacity, duration
     INTO v_service_max_capacity, v_service_duration
@@ -111,7 +111,7 @@ BEGIN
     END IF;
 
     -- 計算本地時間的分鐘數
-    v_booking_minutes := EXTRACT(HOUR FROM v_local_time) * 60 + 
+    v_booking_minutes := EXTRACT(HOUR FROM v_local_time) * 60 +
                         EXTRACT(MINUTE FROM v_local_time);
     v_service_duration := (v_service_duration::text || ' minutes')::interval;
 
@@ -128,13 +128,13 @@ BEGIN
 
     -- 使用計算得到的提前預約時間進行檢查
     IF p_booking_start_time <= CURRENT_TIMESTAMP + v_min_lead_time THEN
-        RETURN json_build_object('success', false, 'message', 
-            '此服務需要提前 ' || 
+        RETURN json_build_object('success', false, 'message',
+            '此服務需要提前 ' ||
             EXTRACT(EPOCH FROM v_min_lead_time)/3600 || ' 小時預約');
     END IF;
 
     -- 檢查是否在營業時段內
-    SELECT id 
+    SELECT id
     INTO v_period_id
     FROM n8n_booking_time_periods
     WHERE business_id = p_business_id
@@ -144,7 +144,7 @@ BEGIN
 
     IF v_period_id IS NULL THEN
         RETURN json_build_object(
-            'success', false, 
+            'success', false,
             'message', '所選時間不在任何有效時段內',
             'debug', json_build_object(
                 'booking_minutes', v_booking_minutes,
@@ -163,7 +163,7 @@ BEGIN
     IF v_is_allowed = false THEN
         RETURN json_build_object(
             'success', false,
-            'message', '所選服務在此时段不可預約，請選擇其他時段'
+            'message', '所選服務在此時段不可預約，請選擇其他時段'
         );
     END IF;
 
@@ -173,7 +173,7 @@ BEGIN
         FROM n8n_booking_bookings b
         WHERE b.service_id = v_service_id
           AND b.status = 'confirmed'
-          AND tstzrange(b.booking_start_time, b.booking_start_time + b.booking_duration) && 
+          AND tstzrange(b.booking_start_time, b.booking_start_time + b.booking_duration) &&
               tstzrange(p_booking_start_time, p_booking_start_time + v_service_duration)
           AND b.customer_email = p_customer_email
     ) INTO v_existing_booking;
@@ -188,7 +188,7 @@ BEGIN
          FROM n8n_booking_bookings
          WHERE service_id = v_service_id
            AND status = 'confirmed'
-           AND tstzrange(booking_start_time, booking_start_time + booking_duration) && 
+           AND tstzrange(booking_start_time, booking_start_time + booking_duration) &&
                tstzrange(p_booking_start_time, p_booking_start_time + v_service_duration)
         ), 0
     ) INTO v_available_slots;

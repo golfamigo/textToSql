@@ -24,7 +24,7 @@ DECLARE
     v_matched_name text;
 BEGIN
     -- 查找服務 ID
-    SELECT service_id, matched_name 
+    SELECT service_id, matched_name
     FROM find_service(p_business_id => p_business_id, p_service_name => p_service_name)
     INTO v_service_id, v_matched_name;
 

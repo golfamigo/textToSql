@@ -60,7 +60,7 @@ class TestAPIE2E(unittest.TestCase):
         pass
     
     # 注意：以下測試依賴於應用程序中的實際服務實現
-    # 由於無法在測試中連接真實數據庫，這些測試可能會失敗
+    # 由於無法在測試中連接真實資料庫，這些測試可能會失敗
     # 這些測試主要用於展示如何實現端到端測試
     
     @pytest.mark.skip(reason="需要真實服務連接")
@@ -71,7 +71,7 @@ class TestAPIE2E(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["status"], "ok")
-        # 注意：以下斷言取決於實際的數據庫連接和服務配置
+        # 注意：以下斷言取決於實際的資料庫連接和服務配置
         # self.assertEqual(data["database"], "connected")
         # self.assertGreaterEqual(len(data["models"]["names"]), 1)
     
@@ -82,7 +82,7 @@ class TestAPIE2E(unittest.TestCase):
         
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        # 注意：以下斷言取決於實際的數據庫內容
+        # 注意：以下斷言取決於實際的資料庫內容
         # self.assertIsInstance(data["tables"], list)
         # self.assertGreater(len(data["tables"]), 0)
     

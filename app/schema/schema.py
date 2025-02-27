@@ -15,7 +15,7 @@ def load_schema_from_sql_files(schema_dir):
     
     for sql_file in sql_files:
         table_name = os.path.basename(sql_file).replace('.sql', '')
-        with open(sql_file, 'r') as f:
+        with open(sql_file, 'r', encoding='utf-8') as f: # Added encoding='utf-8'
             sql_content = f.read()
             
             # 提取 CREATE TABLE 語句
@@ -46,11 +46,11 @@ def load_schema_from_sql_files(schema_dir):
                     column_defs.append(current_def.strip())
                 
                 for col_def in column_defs:
-                    # 跳過主键和外键约束
+                    # 跳過主鍵和外鍵約束
                     if col_def.strip().upper().startswith('PRIMARY KEY') or col_def.strip().upper().startswith('FOREIGN KEY'):
                         continue
                     
-                    # 提取列名和类型
+                    # 提取列名和類型
                     col_match = re.match(r'([a-zA-Z0-9_]+)\s+(.*)', col_def.strip())
                     if col_match:
                         col_name = col_match.group(1)
@@ -91,7 +91,7 @@ def load_database_functions():
     for sql_file in sql_files:
         file_name = os.path.basename(sql_file).replace('.sql', '')
         try:
-            with open(sql_file, 'r') as f:
+            with open(sql_file, 'r', encoding='utf-8') as f:
                 sql_content = f.read()
                 
                 # 提取函數的參數和返回值
@@ -188,7 +188,7 @@ def get_table_schema_description():
     # 添加資料庫函數說明
     functions = load_database_functions()
     if functions:
-        description += "\n數據庫函數:\n\n"
+        description += "\n資料庫函數:\n\n"
         for func_name, func_info in functions.items():
             # 檢查函數是否有解析錯誤
             if func_info.get('has_parse_error', False):
@@ -211,5 +211,5 @@ def get_table_schema_description():
     return description
 
 
-# 載入數據庫函數定義
+# 載入資料庫函數定義
 db_functions = load_database_functions()

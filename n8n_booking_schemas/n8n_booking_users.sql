@@ -17,4 +17,4 @@ CREATE TABLE public.n8n_booking_users (
     last_login timestamp with time zone
 );
 
-COMMENT ON TABLE public.n8n_booking_users IS '系统用户表';
+COMMENT ON TABLE public.n8n_booking_users IS '系統用戶表';

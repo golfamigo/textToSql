@@ -42,10 +42,10 @@ class QueryResult:
 
 
 class DatabaseService:
-    """數據庫服務"""
+    """資料庫服務"""
     
     def __init__(self):
-        """初始化數據庫服務"""
+        """初始化資料庫服務"""
         self.connected = False
         self.engine = None
         
@@ -55,12 +55,12 @@ class DatabaseService:
             with self.engine.connect() as conn:
                 conn.execute(text("SELECT 1"))
             self.connected = True
-            logger.info("數據庫連接成功")
+            logger.info("資料庫連接成功")
         except Exception as e:
-            logger.error(f"數據庫連接失敗: {e}")
+            logger.error(f"資料庫連接失敗: {e}")
     
     def is_connected(self) -> bool:
-        """檢查是否連接到數據庫"""
+        """檢查是否連接到資料庫"""
         return self.connected
     
     def is_safe_query(self, sql: str) -> Tuple[bool, str]:
@@ -103,7 +103,7 @@ class DatabaseService:
             查詢結果
         """
         if not self.is_connected():
-            return QueryResult.from_error("未連接到數據庫")
+            return QueryResult.from_error("未連接到資料庫")
         
         # 檢查查詢安全性
         is_safe, reason = self.is_safe_query(sql)
@@ -151,11 +151,11 @@ class DatabaseService:
                 except exc.ProgrammingError as e:
                     # 處理特定的函數不存在錯誤
                     if is_function_call and "function does not exist" in str(e).lower():
-                        logger.error(f"數據庫函數不存在: {function_name}")
+                        logger.error(f"資料庫函數不存在: {function_name}")
                         
                         # 記錄此函數錯誤，後續可以更新 db_functions 中的狀態
                         return QueryResult.from_error(
-                            f"函數 '{function_name}' 不存在或未正確安裝到數據庫。請使用直接查詢替代此函數調用。"
+                            f"函數 '{function_name}' 不存在或未正確安裝到資料庫。請使用直接查詢替代此函數調用。"
                         )
                     else:
                         raise
@@ -251,7 +251,7 @@ class DatabaseService:
             表結構信息
         """
         if not self.is_connected():
-            return {"error": "未連接到數據庫"}
+            return {"error": "未連接到資料庫"}
         
         try:
             with self.engine.connect() as conn:

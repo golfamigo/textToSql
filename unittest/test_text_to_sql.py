@@ -47,7 +47,7 @@ class TestTextToSQL(unittest.TestCase):
         # 建立模擬的歷史服務
         self.mock_history_service = MagicMock()
         
-        # 建立模擬的數據庫服務
+        # 建立模擬的資料庫服務
         self.mock_db_service = MagicMock()
         self.mock_db_service.is_connected.return_value = True
         
@@ -66,7 +66,7 @@ class TestTextToSQL(unittest.TestCase):
         
         # 創建服務實例並替換依賴
         with patch('app.services.text_to_sql.llm_service', self.mock_llm_service), \
-             patch('app.services.text_to_sql.get_table_schema_description', return_value="測試數據庫模式"), \
+             patch('app.services.text_to_sql.get_table_schema_description', return_value="測試資料庫模式"), \
              patch('app.services.text_to_sql.HistoryService', return_value=self.mock_history_service), \
              patch('app.services.text_to_sql.DatabaseService', return_value=self.mock_db_service), \
              patch('app.services.text_to_sql.vector_store', self.mock_vector_store), \
@@ -102,7 +102,7 @@ class TestTextToSQL(unittest.TestCase):
         
         # 創建服務實例並替換依賴
         with patch('app.services.text_to_sql.llm_service', self.mock_llm_service), \
-             patch('app.services.text_to_sql.get_table_schema_description', return_value="測試數據庫模式"), \
+             patch('app.services.text_to_sql.get_table_schema_description', return_value="測試資料庫模式"), \
              patch('app.services.text_to_sql.HistoryService', return_value=self.mock_history_service), \
              patch('app.services.text_to_sql.DatabaseService', return_value=self.mock_db_service), \
              patch('app.services.text_to_sql.vector_store', self.mock_vector_store), \
@@ -153,7 +153,7 @@ class TestTextToSQL(unittest.TestCase):
         
         # 創建服務實例並替換依賴
         with patch('app.services.text_to_sql.llm_service', self.mock_llm_service), \
-             patch('app.services.text_to_sql.get_table_schema_description', return_value="測試數據庫模式"), \
+             patch('app.services.text_to_sql.get_table_schema_description', return_value="測試資料庫模式"), \
              patch('app.services.text_to_sql.HistoryService', return_value=self.mock_history_service), \
              patch('app.services.text_to_sql.DatabaseService', return_value=self.mock_db_service), \
              patch('app.services.text_to_sql.vector_store', self.mock_vector_store), \
@@ -200,7 +200,7 @@ class TestTextToSQL(unittest.TestCase):
         
         # 創建服務實例並替換依賴
         with patch('app.services.text_to_sql.llm_service', self.mock_llm_service), \
-             patch('app.services.text_to_sql.get_table_schema_description', return_value="測試數據庫模式"), \
+             patch('app.services.text_to_sql.get_table_schema_description', return_value="測試資料庫模式"), \
              patch('app.services.text_to_sql.HistoryService', return_value=self.mock_history_service), \
              patch('app.services.text_to_sql.DatabaseService', return_value=self.mock_db_service), \
              patch('app.services.text_to_sql.vector_store', self.mock_vector_store), \
@@ -216,7 +216,7 @@ class TestTextToSQL(unittest.TestCase):
             # 驗證結果
             self.assertIsNotNone(result.execution_result)
             
-            # 驗證數據庫服務調用
+            # 驗證資料庫服務調用
             self.mock_db_service.execute_query_with_viz.assert_called_once()
             
             # 直接測試execute_sql方法

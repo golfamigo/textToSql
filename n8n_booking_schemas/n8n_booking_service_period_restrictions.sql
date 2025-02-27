@@ -7,4 +7,4 @@ CREATE TABLE public.n8n_booking_service_period_restrictions (
     updated_at timestamp with time zone
 );
 
-COMMENT ON TABLE public.n8n_booking_service_period_restrictions IS '服务与时段限制关系表';
+COMMENT ON TABLE public.n8n_booking_service_period_restrictions IS '服務與時段限制關係表';

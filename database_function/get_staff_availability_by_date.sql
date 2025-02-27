@@ -21,7 +21,7 @@ CREATE OR REPLACE FUNCTION get_staff_availability_by_date(
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT 
+    SELECT
         sa.start_time,
         sa.end_time,
         sa.availability_type,

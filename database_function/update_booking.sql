@@ -37,7 +37,7 @@ DECLARE
     v_local_current_time timestamp;
     v_service_id uuid;
     v_matched_name text;
-    v_business_id uuid;    
+    v_business_id uuid;
 BEGIN
     -- 先獲取預約資訊
     SELECT * INTO v_current_booking
@@ -70,7 +70,7 @@ BEGIN
             RETURN json_build_object('success', false, 'message', '找不到該服務');
         END IF;
     END IF;
-    
+
     -- 獲取商家時區
     SELECT timezone INTO v_business_timezone
     FROM n8n_booking_businesses
@@ -181,17 +181,17 @@ BEGIN
         p_booking_id,
         v_old_status,
         'modified',
-        CASE 
-            WHEN p_new_service_name IS NOT NULL THEN 
+        CASE
+            WHEN p_new_service_name IS NOT NULL THEN
                 '客戶修改預約服務為：' || v_matched_name
-            ELSE 
+            ELSE
                 '客戶修改預約'
         END,
         v_local_current_time
     );
 
     RETURN json_build_object(
-        'success', true, 
+        'success', true,
         'message', '預約修改成功',
         'service_name', COALESCE(v_matched_name, NULL)
     );

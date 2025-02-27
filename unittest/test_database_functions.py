@@ -282,20 +282,20 @@ class MockDatabaseConnection:
 
 
 class MockDatabaseService:
-    """模擬數據庫服務"""
+    """模擬資料庫服務"""
     
     def __init__(self):
         self.connection = MockDatabaseConnection()
         self._connected = True
     
     def is_connected(self) -> bool:
-        """檢查是否已連接到數據庫"""
+        """檢查是否已連接到資料庫"""
         return self._connected
     
     def execute_function(self, function_name: str, params: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """執行數據庫函數"""
+        """執行資料庫函數"""
         if not self.is_connected():
-            raise Exception("未連接到數據庫")
+            raise Exception("未連接到資料庫")
         
         return self.connection.execute_function(function_name, params)
 

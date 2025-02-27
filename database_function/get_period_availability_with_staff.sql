@@ -33,17 +33,17 @@ BEGIN
     IF v_service_id IS NULL THEN
         RAISE EXCEPTION '找不到該服務，請確認服務名稱是否正確';
     END IF;
-    
+
     -- 獲取服務時長
     SELECT duration INTO v_service_duration
     FROM n8n_booking_services
     WHERE id = v_service_id;
-    
+
     -- 查詢可用時段和可用員工
     RETURN QUERY
     WITH available_periods AS (
         -- 查詢可用時段
-        SELECT 
+        SELECT
             d.booking_date,
             p.id AS period_id,
             p.name AS period_name,
@@ -60,13 +60,13 @@ BEGIN
             ) AS available_slots
         FROM (SELECT unnest(p_booking_dates) AS booking_date) d
         JOIN n8n_booking_time_periods p ON p.business_id = p_business_id AND p.is_active = true
-        LEFT JOIN n8n_booking_service_period_restrictions r 
+        LEFT JOIN n8n_booking_service_period_restrictions r
             ON r.service_id = v_service_id AND r.period_id = p.id
         WHERE COALESCE(r.is_allowed, true) = true  -- 檢查服務時段限制
     ),
     staff_with_service AS (
         -- 查詢可以提供此服務的員工
-        SELECT 
+        SELECT
             ss.staff_id,
             u.name AS staff_name,
             ss.is_primary,
@@ -77,7 +77,7 @@ BEGIN
         AND u.is_active = true
         AND u.role = 'staff'
     )
-    SELECT 
+    SELECT
         ap.booking_date,
         ap.period_name,
         ap.start_time,

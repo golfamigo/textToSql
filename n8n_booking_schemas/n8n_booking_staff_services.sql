@@ -8,4 +8,4 @@ CREATE TABLE public.n8n_booking_staff_services (
     created_at timestamp with time zone DEFAULT now()
 );
 
-COMMENT ON TABLE public.n8n_booking_staff_services IS '员工可提供的服务关联表';
+COMMENT ON TABLE public.n8n_booking_staff_services IS '員工可提供的服務關聯表';

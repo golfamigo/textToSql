@@ -1,5 +1,5 @@
 """
-測試數據庫服務
+測試資料庫服務
 """
 import unittest
 from unittest.mock import MagicMock, patch
@@ -25,11 +25,11 @@ class MockQueryResult:
 
 
 class TestDatabaseService(unittest.TestCase):
-    """測試數據庫服務"""
+    """測試資料庫服務"""
     
     def setUp(self):
         """設置測試環境"""
-        # 創建模擬的數據庫服務類
+        # 創建模擬的資料庫服務類
         self.db_service = MagicMock()
         self.db_service.is_connected.return_value = True
         self.db_service.execute_query.return_value = MockQueryResult(
@@ -42,7 +42,7 @@ class TestDatabaseService(unittest.TestCase):
     
     def test_execute_query(self):
         """測試執行查詢功能"""
-        # 使用模擬的數據庫服務
+        # 使用模擬的資料庫服務
         result = self.db_service.execute_query("SELECT * FROM test WHERE id = :id", {"id": 1})
         
         # 驗證結果是正確的類型
@@ -69,7 +69,7 @@ class TestDatabaseService(unittest.TestCase):
         self.assertEqual(result.error, "測試錯誤")
     
     def test_connection_management(self):
-        """測試數據庫連接管理"""
+        """測試資料庫連接管理"""
         # 設置環境變數
         os.environ['DATABASE_URL'] = 'postgresql://user:password@localhost:5432/test'
         

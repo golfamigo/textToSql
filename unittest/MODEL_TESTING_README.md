@@ -8,11 +8,11 @@
 
 該測試文件包含對所有主要模型的基本驗證測試，包括：
 
-- `TestUserModel`: 測試使用者模型的字段驗證
-- `TestBookingModel`: 測試預約模型的字段驗證和時間驗證器
-- `TestServiceModel`: 測試服務模型的字段驗證
-- `TestTimePeriodModel`: 測試時段模型的字段驗證和時間驗證器
-- `TestBusinessModel`: 測試商家模型的字段驗證
+- `TestUserModel`: 測試使用者模型的欄位驗證
+- `TestBookingModel`: 測試預約模型的欄位驗證和時間驗證器
+- `TestServiceModel`: 測試服務模型的欄位驗證
+- `TestTimePeriodModel`: 測試時段模型的欄位驗證和時間驗證器
+- `TestBusinessModel`: 測試商家模型的欄位驗證
 
 ### 2. 進階模型驗證測試 (`test_advanced_model_validation.py`)
 
@@ -20,7 +20,7 @@
 
 - `TestNestedModels`: 測試嵌套 JSON 數據的驗證
 - `TestComplexValidators`: 測試複雜的驗證邏輯，如時間範圍和狀態轉換
-- `TestEdgeCases`: 測試各種邊界情況，如可選字段為空、最小必填字段等
+- `TestEdgeCases`: 測試各種邊界情況，如可選欄位為空、最小必填欄位等
 - `TestQueryHistoryModel`: 測試查詢歷史模型的特定功能
 
 ### 3. 模型架構和序列化測試 (`test_model_schema_validation.py`)
@@ -50,9 +50,9 @@ python -m unittest unittest/test_model_validation.py
 
 這些測試覆蓋了以下方面：
 
-1. **基本驗證**：確保所有必填字段都得到驗證，可選字段有正確的默認值
-2. **類型驗證**：確保字段類型（如 UUID、日期時間、枚舉等）得到正確驗證
-3. **自定義驗證器**：測試自定義字段驗證器（如結束時間必須晚於開始時間）
+1. **基本驗證**：確保所有必填欄位都得到驗證，可選欄位有正確的默認值
+2. **類型驗證**：確保欄位類型（如 UUID、日期時間、枚舉等）得到正確驗證
+3. **自定義驗證器**：測試自定義欄位驗證器（如結束時間必須晚於開始時間）
 4. **嵌套數據**：測試嵌套 JSON 數據的驗證和處理
 5. **序列化/反序列化**：確保模型可以正確地序列化為 JSON 和從 JSON 反序列化
 6. **架構驗證**：測試生成的 JSON 架構是否正確描述了模型
@@ -62,7 +62,7 @@ python -m unittest unittest/test_model_validation.py
 當添加新的模型或修改現有模型時，應該相應地更新這些測試。在添加新測試時，請考慮以下幾點：
 
 1. 為新模型添加基本驗證測試
-2. 為複雜字段和自定義驗證器添加特定測試
+2. 為複雜欄位和自定義驗證器添加特定測試
 3. 確保測試覆蓋邊界情況和潛在錯誤條件
 4. 添加序列化/反序列化測試
 

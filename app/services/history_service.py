@@ -32,7 +32,7 @@ class QueryHistory(Base):
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, nullable=True, onupdate=datetime.now)
     
-    # 對話支持字段
+    # 對話支持欄位
     conversation_id = Column(String, nullable=True)
     references_query_id = Column(String, nullable=True)
     resolved_query = Column(Text, nullable=True)
@@ -74,7 +74,7 @@ class HistoryService:
         初始化查詢歷史服務
         
         Args:
-            use_db (bool): 是否使用數據庫存儲歷史記錄，如果為 False 則使用 JSON 文件
+            use_db (bool): 是否使用資料庫存儲歷史記錄，如果為 False 則使用 JSON 文件
         """
         self.use_db = use_db
         self.history_file = os.path.join(os.path.dirname(__file__), "../../query_history.json")
@@ -85,9 +85,9 @@ class HistoryService:
                 self.engine = create_engine(settings.database_url)
                 Base.metadata.create_all(self.engine)
                 self.Session = sessionmaker(bind=self.engine)
-                logger.info("已連接到數據庫並初始化查詢歷史表")
+                logger.info("已連接到資料庫並初始化查詢歷史表")
             except Exception as e:
-                logger.error(f"連接數據庫失敗: {e}")
+                logger.error(f"連接資料庫失敗: {e}")
                 self.use_db = False
                 logger.info("改用 JSON 文件存儲歷史記錄")
     
@@ -107,7 +107,7 @@ class HistoryService:
             return self._add_query_to_file(query_model)
     
     def _add_query_to_db(self, query_model: QueryHistoryModel) -> QueryHistoryModel:
-        """使用數據庫存儲查詢歷史"""
+        """使用資料庫存儲查詢歷史"""
         try:
             with self.Session() as session:
                 # 將 Pydantic 模型轉換為 SQLAlchemy 模型
@@ -137,7 +137,7 @@ class HistoryService:
                 
                 return query_model
         except Exception as e:
-            logger.error(f"保存查詢歷史到數據庫失敗: {e}")
+            logger.error(f"保存查詢歷史到資料庫失敗: {e}")
             # 失敗時改用文件存儲
             return self._add_query_to_file(query_model)
     
@@ -205,7 +205,7 @@ class HistoryService:
             return self._get_query_by_id_from_file(query_id)
             
     def _get_history_from_db(self, limit: int, offset: int) -> List[QueryHistoryModel]:
-        """從數據庫獲取查詢歷史"""
+        """從資料庫獲取查詢歷史"""
         try:
             with self.Session() as session:
                 records = session.query(QueryHistory).order_by(
@@ -236,12 +236,12 @@ class HistoryService:
                     ) for record in records
                 ]
         except Exception as e:
-            logger.error(f"從數據庫獲取查詢歷史失敗: {e}")
+            logger.error(f"從資料庫獲取查詢歷史失敗: {e}")
             # 失敗時改用文件讀取
             return self._get_history_from_file(limit, offset)
     
     def _get_query_by_id_from_db(self, query_id: str) -> Optional[QueryHistoryModel]:
-        """從數據庫獲取指定 ID 的查詢歷史"""
+        """從資料庫獲取指定 ID 的查詢歷史"""
         try:
             with self.Session() as session:
                 record = session.query(QueryHistory).filter(QueryHistory.id == query_id).first()
@@ -269,7 +269,7 @@ class HistoryService:
                     )
                 return None
         except Exception as e:
-            logger.error(f"從數據庫獲取查詢歷史失敗: {e}")
+            logger.error(f"從資料庫獲取查詢歷史失敗: {e}")
             return None
     
     def _get_query_by_id_from_file(self, query_id: str) -> Optional[QueryHistoryModel]:
@@ -316,7 +316,7 @@ class HistoryService:
             return self._get_history_by_conversation_from_file(conversation_id, limit)
     
     def _get_history_by_conversation_from_db(self, conversation_id: str, limit: int) -> List[QueryHistoryModel]:
-        """從數據庫獲取對話相關的查詢歷史"""
+        """從資料庫獲取對話相關的查詢歷史"""
         try:
             with self.Session() as session:
                 records = session.query(QueryHistory).filter(
@@ -341,7 +341,7 @@ class HistoryService:
                     ) for record in records
                 ]
         except Exception as e:
-            logger.error(f"從數據庫獲取對話歷史失敗: {e}")
+            logger.error(f"從資料庫獲取對話歷史失敗: {e}")
             return []
     
     def _get_history_by_conversation_from_file(self, conversation_id: str, limit: int) -> List[QueryHistoryModel]:
@@ -404,7 +404,7 @@ class HistoryService:
             return self._get_favorites_from_file(limit, offset)
             
     def _get_favorites_from_db(self, limit: int, offset: int) -> List[QueryHistoryModel]:
-        """從數據庫獲取收藏的查詢"""
+        """從資料庫獲取收藏的查詢"""
         try:
             with self.Session() as session:
                 records = session.query(QueryHistory).filter(
@@ -435,7 +435,7 @@ class HistoryService:
                     ) for record in records
                 ]
         except Exception as e:
-            logger.error(f"從數據庫獲取收藏查詢失敗: {e}")
+            logger.error(f"從資料庫獲取收藏查詢失敗: {e}")
             return self._get_favorites_from_file(limit, offset)
             
     def _get_favorites_from_file(self, limit: int, offset: int) -> List[QueryHistoryModel]:
@@ -523,7 +523,7 @@ class HistoryService:
             return self._save_template_to_file(template)
             
     def _save_template_to_db(self, template: QueryTemplateModel) -> QueryTemplateModel:
-        """將模板保存到數據庫"""
+        """將模板保存到資料庫"""
         try:
             with self.Session() as session:
                 # 將 Pydantic 模型轉換為 SQLAlchemy 模型
@@ -545,7 +545,7 @@ class HistoryService:
                 
                 return template
         except Exception as e:
-            logger.error(f"保存模板到數據庫失敗: {e}")
+            logger.error(f"保存模板到資料庫失敗: {e}")
             # 失敗時改用文件存儲
             return self._save_template_to_file(template)
             
@@ -592,7 +592,7 @@ class HistoryService:
             
     def _get_templates_from_db(self, limit: int, offset: int, 
                               tag: Optional[str] = None) -> List[QueryTemplateModel]:
-        """從數據庫獲取查詢模板"""
+        """從資料庫獲取查詢模板"""
         try:
             with self.Session() as session:
                 # 創建查詢
@@ -625,7 +625,7 @@ class HistoryService:
                     ) for record in records
                 ]
         except Exception as e:
-            logger.error(f"從數據庫獲取模板失敗: {e}")
+            logger.error(f"從資料庫獲取模板失敗: {e}")
             return self._get_templates_from_file(limit, offset, tag)
             
     def _get_templates_from_file(self, limit: int, offset: int, 
@@ -680,7 +680,7 @@ class HistoryService:
             return self._get_template_by_id_from_file(template_id)
             
     def _get_template_by_id_from_db(self, template_id: str) -> Optional[QueryTemplateModel]:
-        """從數據庫獲取指定 ID 的模板"""
+        """從資料庫獲取指定 ID 的模板"""
         try:
             with self.Session() as session:
                 record = session.query(QueryTemplate).filter(QueryTemplate.id == template_id).first()
@@ -700,7 +700,7 @@ class HistoryService:
                     )
                 return None
         except Exception as e:
-            logger.error(f"從數據庫獲取模板失敗: {e}")
+            logger.error(f"從資料庫獲取模板失敗: {e}")
             return self._get_template_by_id_from_file(template_id)
             
     def _get_template_by_id_from_file(self, template_id: str) -> Optional[QueryTemplateModel]:
@@ -741,14 +741,14 @@ class HistoryService:
             return self._update_template_in_file(template)
             
     def _update_template_in_db(self, template: QueryTemplateModel) -> bool:
-        """在數據庫中更新查詢模板"""
+        """在資料庫中更新查詢模板"""
         try:
             with self.Session() as session:
                 record = session.query(QueryTemplate).filter(QueryTemplate.id == template.id).first()
                 if not record:
                     return False
                     
-                # 更新字段
+                # 更新欄位
                 record.name = template.name
                 record.description = template.description
                 record.user_query = template.user_query
@@ -762,7 +762,7 @@ class HistoryService:
                 session.commit()
                 return True
         except Exception as e:
-            logger.error(f"更新數據庫中的模板失敗: {e}")
+            logger.error(f"更新資料庫中的模板失敗: {e}")
             return self._update_template_in_file(template)
             
     def _update_template_in_file(self, template: QueryTemplateModel) -> bool:
@@ -814,7 +814,7 @@ class HistoryService:
             return self._delete_template_from_file(template_id)
             
     def _delete_template_from_db(self, template_id: str) -> bool:
-        """從數據庫刪除模板"""
+        """從資料庫刪除模板"""
         try:
             with self.Session() as session:
                 record = session.query(QueryTemplate).filter(QueryTemplate.id == template_id).first()
@@ -825,7 +825,7 @@ class HistoryService:
                 session.commit()
                 return True
         except Exception as e:
-            logger.error(f"從數據庫刪除模板失敗: {e}")
+            logger.error(f"從資料庫刪除模板失敗: {e}")
             return False
             
     def _delete_template_from_file(self, template_id: str) -> bool:
@@ -866,14 +866,14 @@ class HistoryService:
             return self._update_query_in_file(query)
     
     def _update_query_in_db(self, query: QueryHistoryModel) -> bool:
-        """在數據庫中更新查詢歷史"""
+        """在資料庫中更新查詢歷史"""
         try:
             with self.Session() as session:
                 record = session.query(QueryHistory).filter(QueryHistory.id == query.id).first()
                 if not record:
                     return False
                 
-                # 更新字段
+                # 更新欄位
                 record.user_query = query.user_query
                 record.generated_sql = query.generated_sql
                 record.explanation = query.explanation
@@ -895,7 +895,7 @@ class HistoryService:
                 session.commit()
                 return True
         except Exception as e:
-            logger.error(f"更新數據庫中的查詢歷史失敗: {e}")
+            logger.error(f"更新資料庫中的查詢歷史失敗: {e}")
             return False
     
     def _update_query_in_file(self, query: QueryHistoryModel) -> bool:
@@ -947,7 +947,7 @@ class HistoryService:
             return False
     
     def _get_history_from_db(self, limit: int, offset: int) -> List[QueryHistoryModel]:
-        """從數據庫獲取查詢歷史"""
+        """從資料庫獲取查詢歷史"""
         try:
             with self.Session() as session:
                 records = session.query(QueryHistory).order_by(
@@ -978,7 +978,7 @@ class HistoryService:
                     ) for record in records
                 ]
         except Exception as e:
-            logger.error(f"從數據庫獲取查詢歷史失敗: {e}")
+            logger.error(f"從資料庫獲取查詢歷史失敗: {e}")
             # 失敗時改用文件讀取
             return self._get_history_from_file(limit, offset)
     

@@ -20,7 +20,7 @@ CREATE OR REPLACE FUNCTION get_staff_services(
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT 
+    SELECT
         s.id AS service_id,
         s.name AS service_name,
         s.description,

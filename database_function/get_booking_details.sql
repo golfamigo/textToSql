@@ -23,7 +23,7 @@ RETURNS TABLE (
     service_duration integer,
     service_price numeric,
     service_max_capacity integer,
-    number_of_people integer  -- 添加人数
+    number_of_people integer  -- 添加人數
 )
 AS $$
 BEGIN
@@ -47,7 +47,7 @@ BEGIN
         s.duration AS service_duration,
         s.price AS service_price,
         s.max_capacity AS service_max_capacity,
-        b.number_of_people  -- 添加人数
+        b.number_of_people  -- 添加人數
     FROM
         n8n_booking_bookings b
     JOIN

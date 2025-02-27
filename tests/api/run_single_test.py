@@ -39,7 +39,7 @@ def test_api_example():
         return False
     
     if data["database"] != "connected":
-        print("❌ 測試失敗：數據庫狀態不正確")
+        print("❌ 測試失敗：資料庫狀態不正確")
         return False
     
     if data["models"]["default"] != "dummy-model":

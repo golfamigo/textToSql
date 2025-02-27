@@ -42,7 +42,7 @@ class UserModel(BaseDBModel):
                 "is_active": True,
                 "line_user_id": "U1234567890abcdef1234567890abcdef",
                 "notes": "資深造型師",
-                "settings": {"notifications": {"email": true, "sms": false}}
+                "settings": {"notifications": {"email": True, "sms": False}}
             }
         }
     }

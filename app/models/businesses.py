@@ -38,7 +38,7 @@ class BusinessModel(BaseDBModel):
                 "id": "123e4567-e89b-12d3-a456-426614174000",
                 "name": "美容沙龍示範",
                 "description": "專業美容服務",
-                "address": "台北市信義區101號",
+                "address": "臺北市信義區101號",
                 "contact_email": "contact@salon.example.com",
                 "contact_phone": "02-1234-5678",
                 "timezone": "Asia/Taipei",

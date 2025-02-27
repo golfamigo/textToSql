@@ -163,7 +163,7 @@ class TestVectorStoreAPI(unittest.TestCase):
         self.assertEqual(response.status_code, 422)
     
     def test_add_with_missing_fields(self):
-        """測試缺少必要字段的添加請求"""
+        """測試缺少必要欄位的添加請求"""
         # 缺少 SQL 的請求數據
         request_data = {
             "query": "測試添加查詢"

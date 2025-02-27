@@ -23,8 +23,8 @@ CREATE OR REPLACE FUNCTION get_all_staff(
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT 
-        u.id, u.name, u.email, u.phone, u.line_user_id, 
+    SELECT
+        u.id, u.name, u.email, u.phone, u.line_user_id,
         u.is_active, u.notes, u.created_at
     FROM n8n_booking_users u
     WHERE u.business_id = p_business_id

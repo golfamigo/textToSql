@@ -52,7 +52,7 @@ BEGIN
 
     RETURN QUERY
     WITH future_bookings AS (
-        SELECT 
+        SELECT
             b.period_id,
             COUNT(*) > 0 as has_bookings
         FROM n8n_booking_bookings b
@@ -61,7 +61,7 @@ BEGIN
           AND b.status = 'confirmed'
         GROUP BY b.period_id
     )
-    SELECT 
+    SELECT
         r.id as restriction_id,
         tp.id as period_id,
         tp.name as period_name,
@@ -74,8 +74,8 @@ BEGIN
         COALESCE(fb.has_bookings, false) as has_future_bookings,
         matched_service_name as matched_service_name
     FROM n8n_booking_time_periods tp
-    LEFT JOIN n8n_booking_service_period_restrictions r 
-        ON r.period_id = tp.id 
+    LEFT JOIN n8n_booking_service_period_restrictions r
+        ON r.period_id = tp.id
         AND r.service_id = v_service_id  -- 使用找到的 service_id
     LEFT JOIN future_bookings fb ON fb.period_id = tp.id
     WHERE tp.is_active = true

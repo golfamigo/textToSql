@@ -29,7 +29,7 @@ pip install pytest pytest-cov
 
 ### 執行 pytest 測試
 
-注意：執行 pytest 測試需要完整設置環境變數和數據庫連接。
+注意：執行 pytest 測試需要完整設置環境變數和資料庫連接。
 
 ```bash
 # 從專案根目錄執行
@@ -54,7 +54,7 @@ python -m pytest tests/test_history_service.py::TestHistoryService::test_add_que
 
 ### 執行 unittest 測試
 
-unittest 測試使用完全獨立的模擬，不依賴外部數據庫或配置。
+unittest 測試使用完全獨立的模擬，不依賴外部資料庫或配置。
 
 ```bash
 # 執行所有 unittest 測試
@@ -74,7 +74,7 @@ python -m unittest unittest/test_history_service.py
 - 查詢收藏功能
 - 模板管理功能
 
-測試使用 SQLite 內存數據庫，確保測試環境與生產環境隔離。
+測試使用 SQLite 內存資料庫，確保測試環境與生產環境隔離。
 
 ### 文件存儲測試 (pytest)
 

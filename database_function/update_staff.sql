@@ -22,7 +22,7 @@ CREATE OR REPLACE FUNCTION update_staff(
 ) RETURNS JSON AS $$
 BEGIN
     UPDATE n8n_booking_users
-    SET 
+    SET
         name = COALESCE(p_name, name),
         email = COALESCE(p_email, email),
         phone = COALESCE(p_phone, phone),
@@ -30,7 +30,7 @@ BEGIN
         notes = COALESCE(p_notes, notes),
         updated_at = now()
     WHERE id = p_staff_id AND role = 'staff';
-    
+
     IF FOUND THEN
         RETURN json_build_object(
             'success', true,

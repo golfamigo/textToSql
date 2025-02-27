@@ -129,11 +129,11 @@ def run_test(test_name):
                 print(f"❌ 測試失敗：響應中的 '{key}' 不符合預期")
                 return False
     
-    # 驗證響應字段
+    # 驗證響應欄位
     if "expected_fields" in test:
         for field in test["expected_fields"]:
             if field not in response["response"]:
-                print(f"❌ 測試失敗：響應中缺少 '{field}' 字段")
+                print(f"❌ 測試失敗：響應中缺少 '{field}' 欄位")
                 return False
     
     print(f"✅ 測試通過！")

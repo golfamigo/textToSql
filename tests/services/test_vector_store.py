@@ -191,7 +191,7 @@ class TestVectorStore(unittest.TestCase):
             metadata=metadata
         )
         
-        # 驗證字段
+        # 驗證欄位
         self.assertEqual(query_embedding.query, query)
         self.assertEqual(query_embedding.sql, sql)
         self.assertEqual(query_embedding.embedding, embedding)

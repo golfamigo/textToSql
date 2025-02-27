@@ -46,7 +46,7 @@ class TextToSQLService:
         self.llm_service = llm_service
         self.schema_description = get_table_schema_description()
         
-        # 初始化歷史記錄和數據庫服務
+        # 初始化歷史記錄和資料庫服務
         self.history_service = HistoryService(use_db=False)  # 預設使用 JSON 文件存儲
         self.db_service = DatabaseService()
         
@@ -119,7 +119,7 @@ class TextToSQLService:
                     self.logger.error(f"查找相似查詢時出錯: {e}")
                     # 如果查找相似查詢時出錯，忽略錯誤，繼續處理
             
-            # 嘗試推薦適合的數據庫函數
+            # 嘗試推薦適合的資料庫函數
             function_suggestion = get_function_suggestion(query)
             
             # 建構基本 prompt
@@ -290,9 +290,9 @@ class TextToSQLService:
         Returns:
             查詢結果
         """
-        # 檢查數據庫連接
+        # 檢查資料庫連接
         if not self.db_service.is_connected():
-            return QueryResult.from_error("未連接到數據庫")
+            return QueryResult.from_error("未連接到資料庫")
         
         # 使用增強版查詢執行 (帶視覺化)
         if visualize:
@@ -302,7 +302,7 @@ class TextToSQLService:
             if viz_metadata:
                 result_dict = result.to_dict()
                 result_dict["visualization"] = viz_metadata
-                # 在原來的 QueryResult 基礎上增加 visualization 字段
+                # 在原來的 QueryResult 基礎上增加 visualization 欄位
                 setattr(result, "visualization", viz_metadata)
                 return result
             return result
@@ -325,21 +325,21 @@ class TextToSQLService:
     
     def _build_prompt(self, query: str) -> str:
         """建構基本提示詞"""
-        return f"""你是一個專業的 PostgreSQL 數據庫專家。你的任務是將用戶的自然語言查詢轉換成精確的 SQL 查詢。
+        return f"""你是一個專業的 PostgreSQL 資料庫專家。你的任務是將用戶的自然語言查詢轉換成精確的 SQL 查詢。
 以下是資料庫結構的詳細描述，請根據這些信息生成正確的 SQL 查詢：
 
 {self.schema_description}
 
 重要說明：
-1. 針對預約、時段可用性、服務搜尋等功能，優先使用數據庫函數而非直接編寫複雜查詢。
-2. 當用戶詢問的問題可以使用數據庫函數解決時，優先生成使用函數的查詢，例如：
+1. 針對預約、時段可用性、服務搜尋等功能，優先使用資料庫函數而非直接編寫複雜查詢。
+2. 當用戶詢問的問題可以使用資料庫函數解決時，優先生成使用函數的查詢，例如：
    - 查詢服務可用時段，使用 get_period_availability 函數
    - 查詢員工可用性，使用 get_staff_availability_by_date 函數
    - 模糊搜尋服務，使用 find_service 函數
    - 查詢預約詳情，使用 get_booking_details 函數
 3. 重要：請將所有動態值轉換為參數化查詢，使用 :param_name 格式
    - 例如，不要寫 "WHERE name = 'John'"，而是寫 "WHERE name = :name"
-   - 將參數值作為額外的 parameters 字段返回
+   - 將參數值作為額外的 parameters 欄位返回
 
 請遵循以下規則：
 1. 僅生成有效的 PostgreSQL SQL 查詢
@@ -350,7 +350,7 @@ class TextToSQLService:
 6. 使用正確的聯結語法和條件
 7. 僅產生只讀查詢 (SELECT)，不生成任何修改數據的查詢
 8. 當查詢涉及多個表時，確保使用正確的JOIN條件和關聯欄位
-9. 當使用數據庫函數時，確保正確傳遞所需參數
+9. 當使用資料庫函數時，確保正確傳遞所需參數
 10. 以繁體中文解釋生成的 SQL 查詢
 11. 若用戶的查詢不明確，請生成最合理的解釋和 SQL 查詢
 
@@ -397,7 +397,7 @@ class TextToSQLService:
 請根據上述對話歷史，理解用戶的當前查詢。用戶可能會使用代詞（如「它們」、「這些」、「他」）參考之前的實體，
 或者省略之前提到過的條件。你應該識別這些潛在的指代，並在生成SQL時包含必要的上下文信息。
 
-如果你可以識別出當前查詢中的代詞或省略，請在返回的JSON中加入以下字段：
+如果你可以識別出當前查詢中的代詞或省略，請在返回的JSON中加入以下欄位：
 1. entity_references: 一個字典，表示你識別出的實體引用，例如 {"它們": "服務", "這個員工": "John Smith"}
 
 例如，如果之前的查詢是關於「美甲服務」，而當前查詢是「它的價格是多少？」，你應該理解「它」指的是「美甲服務」。
@@ -414,7 +414,7 @@ class TextToSQLService:
         
 請識別當前查詢中的代詞（如「它們」、「這些」、「他」等），並使用對話歷史中的信息將其替換為具體的實體名稱或描述。
 
-你的回應必須是JSON格式，包含以下字段:
+你的回應必須是JSON格式，包含以下欄位:
 1. resolved_query: 完整的、獨立的查詢，其中不包含任何需要依賴上下文才能理解的代詞或引用
 2. entity_references: 一個字典，表示你識別出的實體引用，例如 {"它們": "服務", "這個員工": "John Smith"}
 

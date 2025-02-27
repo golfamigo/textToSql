@@ -22,14 +22,14 @@ BEGIN
     SET min_booking_lead_time = p_min_booking_lead_time,
         updated_at = CURRENT_TIMESTAMP
     WHERE id = p_business_id;
-    
+
     IF NOT FOUND THEN
         RETURN json_build_object('success', false, 'message', '找不到該商家');
     END IF;
-    
+
     RETURN json_build_object(
         'success', true,
-        'message', '預約設定已更新，現在客戶需要提前 ' || 
+        'message', '預約設定已更新，現在客戶需要提前 ' ||
             EXTRACT(EPOCH FROM p_min_booking_lead_time)/3600 || ' 小時預約'
     );
 EXCEPTION WHEN OTHERS THEN

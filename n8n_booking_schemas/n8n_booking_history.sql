@@ -8,4 +8,4 @@ CREATE TABLE public.n8n_booking_history (
     created_at timestamp with time zone DEFAULT now()
 );
 
-COMMENT ON TABLE public.n8n_booking_history IS '预约状态变更历史记录';
+COMMENT ON TABLE public.n8n_booking_history IS '預約狀態變更歷史記錄';

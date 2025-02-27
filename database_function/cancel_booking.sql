@@ -9,9 +9,9 @@ AS $$
 DECLARE
     v_result json;
 BEGIN
-    UPDATE n8n_booking_bookings 
+    UPDATE n8n_booking_bookings
     SET status = 'cancelled'
-    WHERE id = p_booking_id 
+    WHERE id = p_booking_id
     AND status = 'confirmed';
 
     IF FOUND THEN

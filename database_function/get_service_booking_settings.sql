@@ -18,19 +18,19 @@ RETURNS TABLE (
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT 
+    SELECT
         s.id as service_id,
         s.name as service_name,
         s.min_booking_lead_time as service_min_booking_lead_time,
         b.min_booking_lead_time as business_min_booking_lead_time
-    FROM 
+    FROM
         n8n_booking_services s
-    JOIN 
+    JOIN
         n8n_booking_businesses b ON s.business_id = b.id
-    WHERE 
+    WHERE
         s.business_id = p_business_id
         AND s.is_active = true
-    ORDER BY 
+    ORDER BY
         s.name;
 END;
 $$ LANGUAGE plpgsql;

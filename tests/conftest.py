@@ -27,7 +27,7 @@ from app.services.history_service import HistoryService
 
 @pytest.fixture
 def db_engine():
-    """建立一個 SQLite 內存數據庫引擎"""
+    """建立一個 SQLite 內存資料庫引擎"""
     engine = create_engine(
         "sqlite:///:memory:",
         connect_args={"check_same_thread": False},
@@ -39,7 +39,7 @@ def db_engine():
 
 @pytest.fixture
 def db_session(db_engine):
-    """建立數據庫會話"""
+    """建立資料庫會話"""
     Session = sessionmaker(bind=db_engine)
     session = Session()
     try:
@@ -50,14 +50,14 @@ def db_session(db_engine):
 
 @pytest.fixture
 def history_service(monkeypatch, db_engine):
-    """建立一個使用臨時數據庫的 HistoryService"""
+    """建立一個使用臨時資料庫的 HistoryService"""
     # 使用 monkeypatch 模擬設置
     monkeypatch.setattr("app.services.history_service.settings.database_url", "sqlite:///:memory:")
     
     # 創建服務實例
     service = HistoryService(use_db=True)
     
-    # 替換數據庫引擎為測試引擎
+    # 替換資料庫引擎為測試引擎
     service.engine = db_engine
     service.Session = sessionmaker(bind=db_engine)
     

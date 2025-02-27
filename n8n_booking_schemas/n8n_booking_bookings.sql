@@ -21,4 +21,4 @@ CREATE TABLE public.n8n_booking_bookings (
     user_id uuid
 );
 
-COMMENT ON TABLE public.n8n_booking_bookings IS '预约表';
+COMMENT ON TABLE public.n8n_booking_bookings IS '預約表';

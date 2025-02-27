@@ -47,7 +47,7 @@ BEGIN
     RETURN QUERY
     WITH local_bookings AS (
         -- 轉換預約時間到商家時區
-        SELECT 
+        SELECT
             b.*,
             (b.booking_start_time AT TIME ZONE v_business_timezone)::date as local_date
         FROM n8n_booking_bookings b
@@ -55,7 +55,7 @@ BEGIN
           AND b.period_id = v_period_id
     ),
     booking_info AS (
-        SELECT 
+        SELECT
             b.id,
             jsonb_build_object(
                 'booking_id', b.id,
@@ -74,7 +74,7 @@ BEGIN
         WHERE b.local_date = p_booking_date
     ),
     restriction_info AS (
-        SELECT 
+        SELECT
             jsonb_agg(
                 jsonb_build_object(
                     'service_id', s.id,
@@ -83,7 +83,7 @@ BEGIN
                 )
             ) AS restrictions
         FROM n8n_booking_services s
-        LEFT JOIN n8n_booking_service_period_restrictions r 
+        LEFT JOIN n8n_booking_service_period_restrictions r
             ON r.service_id = s.id AND r.period_id = v_period_id
         WHERE s.business_id = p_business_id
           AND s.is_active = true

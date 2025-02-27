@@ -4,5 +4,23 @@
   },
   "env": {
     "PORT": "8000"
+  },
+  "build": {
+    "dockerfile": {
+      "path": "Dockerfile"
+    },
+    "args": {
+      "DEBIAN_FRONTEND": "noninteractive"
+    },
+    "options": {
+      "compression": "gzip",
+      "forcerm": true,
+      "pull": true
+    }
+  },
+  "cache": {
+    "paths": [
+      "/root/.cache/torch/sentence_transformers"
+    ]
   }
 }

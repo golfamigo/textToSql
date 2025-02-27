@@ -204,7 +204,7 @@ class TestBusinessModel(unittest.TestCase):
             "id": uuid4(),
             "name": "測試商家",
             "description": "這是一個測試商家描述",
-            "address": "台北市測試路123號",
+            "address": "臺北市測試路123號",
             "contact_phone": "0223456789",
             "contact_email": "business@example.com",
             "business_hours": {

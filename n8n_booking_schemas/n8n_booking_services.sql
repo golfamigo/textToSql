@@ -14,4 +14,4 @@ CREATE TABLE public.n8n_booking_services (
     min_booking_lead_time interval
 );
 
-COMMENT ON TABLE public.n8n_booking_services IS '服务项目表';
+COMMENT ON TABLE public.n8n_booking_services IS '服務項目表';

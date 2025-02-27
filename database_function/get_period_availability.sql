@@ -27,17 +27,17 @@ DECLARE
     v_business_id uuid;
 BEGIN
     -- 獲取服務對應的商家和時區
-    SELECT s.business_id, b.timezone 
+    SELECT s.business_id, b.timezone
     INTO v_business_id, v_business_timezone
     FROM n8n_booking_services s
     JOIN n8n_booking_businesses b ON b.id = s.business_id
     WHERE s.name = p_service_name
     LIMIT 1;
 
-    RETURN QUERY 
+    RETURN QUERY
     WITH local_bookings AS (
         -- 轉換預約時間到商家時區
-        SELECT 
+        SELECT
             b.id,
             (b.booking_start_time AT TIME ZONE v_business_timezone)::date as local_date,
             b.period_id
@@ -45,7 +45,7 @@ BEGIN
         WHERE b.status = 'confirmed'
         AND b.business_id = v_business_id
     )
-    SELECT 
+    SELECT
         d.date::date as booking_date,
         tp.name as period_name,
         tp.max_capacity - COUNT(b.id)::integer as available_slots,
@@ -53,10 +53,10 @@ BEGIN
     FROM generate_series(p_start_date, p_end_date, '1 day'::interval) d(date)
     CROSS JOIN n8n_booking_time_periods tp
     JOIN n8n_booking_services s ON s.business_id = tp.business_id
-    LEFT JOIN local_bookings b ON 
+    LEFT JOIN local_bookings b ON
         b.local_date = d.date
         AND b.period_id = tp.id
-    WHERE 
+    WHERE
         s.name = p_service_name
         AND tp.name = p_period_name
     GROUP BY d.date, tp.name, tp.max_capacity

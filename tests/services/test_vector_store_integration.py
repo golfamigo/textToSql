@@ -67,7 +67,7 @@ class TestVectorStoreIntegration(unittest.TestCase):
         self.conversation_manager_patcher = patch('app.services.text_to_sql.conversation_manager')
         self.mock_conversation_manager = self.conversation_manager_patcher.start()
         
-        # 模擬數據庫服務
+        # 模擬資料庫服務
         self.db_service_patcher = patch('app.services.database_service.DatabaseService')
         self.mock_db_service = self.db_service_patcher.start()
         
@@ -242,7 +242,7 @@ class TestVectorStoreIntegration(unittest.TestCase):
             timestamp=timestamp
         )
         
-        # 驗證字段
+        # 驗證欄位
         self.assertEqual(similar_query.query, query)
         self.assertEqual(similar_query.sql, sql)
         self.assertEqual(similar_query.similarity, similarity)

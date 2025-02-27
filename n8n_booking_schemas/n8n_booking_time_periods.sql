@@ -10,4 +10,4 @@ CREATE TABLE public.n8n_booking_time_periods (
     is_active boolean DEFAULT true
 );
 
-COMMENT ON TABLE public.n8n_booking_time_periods IS '预约时段表';
+COMMENT ON TABLE public.n8n_booking_time_periods IS '預約時段表';

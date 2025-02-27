@@ -25,7 +25,7 @@ BEGIN
     -- 查找服務 ID
     SELECT * FROM find_service(p_business_id => p_business_id, p_service_name => p_service_name)
     INTO v_service_id, v_matched_name, v_similarity_score;
-    
+
 
     IF v_service_id IS NULL THEN
         RETURN json_build_object(
@@ -33,7 +33,7 @@ BEGIN
             'message', '找不到該服務，請確認服務名稱是否正確'
         );
     END IF;
-    
+
     -- 檢查員工是否存在
     IF NOT EXISTS(SELECT 1 FROM n8n_booking_users WHERE id = p_staff_id AND role = 'staff') THEN
         RETURN json_build_object(
@@ -41,17 +41,17 @@ BEGIN
             'message', '找不到指定的員工'
         );
     END IF;
-    
+
     -- 插入或更新服務關聯
     INSERT INTO n8n_booking_staff_services (
         staff_id, service_id, is_primary, proficiency_level
     ) VALUES (
         p_staff_id, v_service_id, p_is_primary, p_proficiency_level
     ) ON CONFLICT (staff_id, service_id) DO UPDATE
-    SET 
+    SET
         is_primary = p_is_primary,
         proficiency_level = p_proficiency_level;
-    
+
     RETURN json_build_object(
         'success', true,
         'message', '已成功將服務 "' || v_matched_name || '" 分配給員工'

@@ -37,7 +37,7 @@ class TestNestedModels(unittest.TestCase):
             "role": "staff",
             "is_active": True,
             "profile_data": {
-                "address": "台北市測試路123號",
+                "address": "臺北市測試路123號",
                 "preferences": {
                     "language": "zh-TW",
                     "theme": "dark",
@@ -220,7 +220,7 @@ class TestQueryHistoryModel(unittest.TestCase):
         self.assertEqual(query_history.execution_time, 250.5)
 
     def test_query_template_fields(self):
-        """測試查詢模板相關字段"""
+        """測試查詢模板相關欄位"""
         template_data = self.valid_query_data.copy()
         template_data["is_template"] = True
         template_data["template_name"] = "週預約查詢範本"

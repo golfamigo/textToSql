@@ -45,7 +45,7 @@ class MockSettings:
         self.azure_openai_endpoint = "dummy-endpoint"
         self.azure_deployment_name = "dummy-deployment"
         
-        # 數據庫配置
+        # 資料庫配置
         self.db_host = "localhost"
         self.db_port = 5432
         self.db_name = "dummy_db"

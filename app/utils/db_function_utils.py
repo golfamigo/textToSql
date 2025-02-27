@@ -4,7 +4,7 @@ import re
 
 def get_function_suggestion(query: str) -> Optional[Tuple[str, Dict[str, Any]]]:
     """
-    根據用戶查詢，推薦最適合的數據庫函數
+    根據用戶查詢，推薦最適合的資料庫函數
     
     Args:
         query: 用戶的自然語言查詢

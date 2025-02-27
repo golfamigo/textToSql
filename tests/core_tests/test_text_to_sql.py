@@ -46,7 +46,7 @@ def mock_services():
     # 建立模擬的歷史服務
     mock_history_service = MagicMock()
     
-    # 建立模擬的數據庫服務
+    # 建立模擬的資料庫服務
     mock_db_service = MagicMock()
     mock_db_service.is_connected.return_value = True
     
@@ -72,7 +72,7 @@ def test_basic_text_to_sql(mock_services):
     """測試基本的文本到SQL轉換"""
     # 創建服務實例並替換依賴
     with patch('textToSql.app.services.text_to_sql.llm_service', mock_services["llm_service"]), \
-            patch('textToSql.app.services.text_to_sql.get_table_schema_description', return_value="測試數據庫模式"), \
+            patch('textToSql.app.services.text_to_sql.get_table_schema_description', return_value="測試資料庫模式"), \
             patch('textToSql.app.services.text_to_sql.HistoryService', return_value=mock_services["history_service"]), \
             patch('textToSql.app.services.text_to_sql.DatabaseService', return_value=mock_services["db_service"]), \
             patch('textToSql.app.services.text_to_sql.vector_store', mock_services["vector_store"]), \
@@ -106,7 +106,7 @@ def test_error_handling(mock_services):
     
     # 創建服務實例並替換依賴
     with patch('textToSql.app.services.text_to_sql.llm_service', mock_services["llm_service"]), \
-            patch('textToSql.app.services.text_to_sql.get_table_schema_description', return_value="測試數據庫模式"), \
+            patch('textToSql.app.services.text_to_sql.get_table_schema_description', return_value="測試資料庫模式"), \
             patch('textToSql.app.services.text_to_sql.HistoryService', return_value=mock_services["history_service"]), \
             patch('textToSql.app.services.text_to_sql.DatabaseService', return_value=mock_services["db_service"]), \
             patch('textToSql.app.services.text_to_sql.vector_store', mock_services["vector_store"]), \
@@ -144,7 +144,7 @@ def test_conversation_context(mock_services):
     
     # 創建服務實例並替換依賴
     with patch('textToSql.app.services.text_to_sql.llm_service', mock_services["llm_service"]), \
-            patch('textToSql.app.services.text_to_sql.get_table_schema_description', return_value="測試數據庫模式"), \
+            patch('textToSql.app.services.text_to_sql.get_table_schema_description', return_value="測試資料庫模式"), \
             patch('textToSql.app.services.text_to_sql.HistoryService', return_value=mock_services["history_service"]), \
             patch('textToSql.app.services.text_to_sql.DatabaseService', return_value=mock_services["db_service"]), \
             patch('textToSql.app.services.text_to_sql.vector_store', mock_services["vector_store"]), \

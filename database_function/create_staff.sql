@@ -29,7 +29,7 @@ BEGIN
     ) VALUES (
         'staff', p_business_id, p_name, p_email, p_phone, p_line_user_id, p_notes, true
     ) RETURNING id INTO v_staff_id;
-    
+
     RETURN json_build_object(
         'success', true,
         'staff_id', v_staff_id,

@@ -51,7 +51,7 @@ def format_execution_result(result):
 
 
 def print_query_history(service, limit=10):
-    """打印查詢歷史"""
+    """列印查詢歷史"""
     history = service.get_history(limit=limit)
     
     if not history:

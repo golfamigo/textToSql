@@ -34,7 +34,7 @@ CREATE OR REPLACE FUNCTION get_staff_schedule(
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT 
+    SELECT
         b.id AS booking_id,
         b.booking_date,
         b.booking_start_time AS start_time,
