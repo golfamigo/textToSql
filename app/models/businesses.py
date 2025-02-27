@@ -49,7 +49,7 @@ class BusinessModel(BaseDBModel):
                     "thursday": {"open": "09:00", "close": "18:00"},
                     "friday": {"open": "09:00", "close": "18:00"},
                     "saturday": {"open": "10:00", "close": "17:00"},
-                    "sunday": {"open": null, "close": null}
+                    "sunday": {"open": None, "close": None}
                 },
                 "min_booking_lead_time": "PT2H",
                 "subscription_status": "active",
