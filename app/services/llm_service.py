@@ -363,7 +363,6 @@ class AzureProvider(LLMProvider):
                     "completion_tokens": response.usage.completion_tokens,
                     "total_tokens": response.usage.total_tokens,
                 }
-
             # 構建回應
             content = response.choices[0].message.content
 
