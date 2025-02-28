@@ -46,3 +46,7 @@ logs/
 .env.local
 .env.dev
 .env.prod
+
+# ref docs
+database_function/
+n8n_booking_schemas/
