@@ -12,3 +12,5 @@ ENV/
 *.log
 *.swp
 .DS_Store
+database_function/
+n8n_booking_schemas/
