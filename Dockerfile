@@ -10,10 +10,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # 複製需求檔案
 COPY requirements.txt .
-COPY minimal_requirements.txt .
 
 # 安裝核心依賴項
-RUN pip install --no-cache-dir -r minimal_requirements.txt && \
+RUN pip install --no-cache-dir -r requirements.txt && \
     pip cache purge
 
 # 逐一安裝大型依賴項以減少層大小
@@ -26,15 +25,12 @@ RUN pip install --no-cache-dir --timeout 180 faiss-cpu && \
     pip cache purge && \
     rm -rf /tmp/* /var/tmp/* /root/.cache/pip
 
-# 複製向量存儲（不預先加載模型）
-COPY vector_store ./vector_store
-
 # 僅複製必要文件，減少總層數
 COPY app ./app
-COPY database_function ./database_function
-COPY n8n_booking_schemas ./n8n_booking_schemas
-COPY main.py ./ 
 COPY setup.py ./
+
+# 創建一個簡單的入口點文件
+RUN echo 'import uvicorn\nimport os\n\nif __name__ == "__main__":\n    port = int(os.getenv("PORT", "8000"))\n    print(f"啟動TextToSQL服務，端口: {port}")\n    uvicorn.run("app.api:app", host="0.0.0.0", port=port)\n' > main.py
 
 # 設定環境變數
 ENV PYTHONUNBUFFERED=1
