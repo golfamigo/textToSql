@@ -1,11 +1,11 @@
 import uvicorn
 import os
+import logging
 from dotenv import load_dotenv
-from app.core.logging import setup_logging, get_logger
 
 # 設置日誌
-setup_logging()
-logger = get_logger(__name__)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 # 載入環境變數
 load_dotenv()
@@ -18,7 +18,7 @@ if __name__ == "__main__":
     
     # 啟動 FastAPI 應用程式
     uvicorn.run(
-        "app.main:app",
+        "app.api:app",
         host="0.0.0.0",
         port=port,
         reload=True

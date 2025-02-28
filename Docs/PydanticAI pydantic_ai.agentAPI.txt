@@ -1,0 +1,950 @@
+pydantic_ai.agent
+Agent dataclass
+Bases: Generic[AgentDepsT, ResultDataT]
+
+Class for defining "agents" - a way to have a specific type of "conversation" with an LLM.
+
+Agents are generic in the dependency type they take AgentDepsT and the result data type they return, ResultDataT.
+
+By default, if neither generic parameter is customised, agents have type Agent[None, str].
+
+Minimal usage example:
+
+
+from pydantic_ai import Agent
+
+agent = Agent('openai:gpt-4o')
+result = agent.run_sync('What is the capital of France?')
+print(result.data)
+#> Paris
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+model instance-attribute
+
+model: Model | KnownModelName | None
+The default model configured for this agent.
+
+__init__
+
+__init__(
+    model: Model | KnownModelName | None = None,
+    *,
+    result_type: type[ResultDataT] = str,
+    system_prompt: str | Sequence[str] = (),
+    deps_type: type[AgentDepsT] = NoneType,
+    name: str | None = None,
+    model_settings: ModelSettings | None = None,
+    retries: int = 1,
+    result_tool_name: str = "final_result",
+    result_tool_description: str | None = None,
+    result_retries: int | None = None,
+    tools: Sequence[
+        Tool[AgentDepsT] | ToolFuncEither[AgentDepsT, ...]
+    ] = (),
+    defer_model_check: bool = False,
+    end_strategy: EndStrategy = "early"
+)
+Create an agent.
+
+Parameters:
+
+Name	Type	Description	Default
+model	Model | KnownModelName | None	The default model to use for this agent, if not provide, you must provide the model when calling it.	None
+result_type	type[ResultDataT]	The type of the result data, used to validate the result data, defaults to str.	str
+system_prompt	str | Sequence[str]	Static system prompts to use for this agent, you can also register system prompts via a function with system_prompt.	()
+deps_type	type[AgentDepsT]	The type used for dependency injection, this parameter exists solely to allow you to fully parameterize the agent, and therefore get the best out of static type checking. If you're not using deps, but want type checking to pass, you can set deps=None to satisfy Pyright or add a type hint : Agent[None, <return type>].	NoneType
+name	str | None	The name of the agent, used for logging. If None, we try to infer the agent name from the call frame when the agent is first run.	None
+model_settings	ModelSettings | None	Optional model request settings to use for this agent's runs, by default.	None
+retries	int	The default number of retries to allow before raising an error.	1
+result_tool_name	str	The name of the tool to use for the final result.	'final_result'
+result_tool_description	str | None	The description of the final result tool.	None
+result_retries	int | None	The maximum number of retries to allow for result validation, defaults to retries.	None
+tools	Sequence[Tool[AgentDepsT] | ToolFuncEither[AgentDepsT, ...]]	Tools to register with the agent, you can also register tools via the decorators @agent.tool and @agent.tool_plain.	()
+defer_model_check	bool	by default, if you provide a named model, it's evaluated to create a Model instance immediately, which checks for the necessary environment variables. Set this to false to defer the evaluation until the first run. Useful if you want to override the model for testing.	False
+end_strategy	EndStrategy	Strategy for handling tool calls that are requested alongside a final result. See EndStrategy for more information.	'early'
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+end_strategy instance-attribute
+
+end_strategy: EndStrategy = end_strategy
+Strategy for handling tool calls when a final result is found.
+
+name instance-attribute
+
+name: str | None = name
+The name of the agent, used for logging.
+
+If None, we try to infer the agent name from the call frame when the agent is first run.
+
+model_settings instance-attribute
+
+model_settings: ModelSettings | None = model_settings
+Optional model request settings to use for this agents's runs, by default.
+
+Note, if model_settings is provided by run, run_sync, or run_stream, those settings will be merged with this value, with the runtime argument taking priority.
+
+result_type class-attribute instance-attribute
+
+result_type: type[ResultDataT] = result_type
+The type of the result data, used to validate the result data, defaults to str.
+
+run async
+
+run(
+    user_prompt: str | Sequence[UserContent],
+    *,
+    result_type: None = None,
+    message_history: list[ModelMessage] | None = None,
+    model: Model | KnownModelName | None = None,
+    deps: AgentDepsT = None,
+    model_settings: ModelSettings | None = None,
+    usage_limits: UsageLimits | None = None,
+    usage: Usage | None = None,
+    infer_name: bool = True
+) -> AgentRunResult[ResultDataT]
+
+run(
+    user_prompt: str | Sequence[UserContent],
+    *,
+    result_type: type[RunResultDataT],
+    message_history: list[ModelMessage] | None = None,
+    model: Model | KnownModelName | None = None,
+    deps: AgentDepsT = None,
+    model_settings: ModelSettings | None = None,
+    usage_limits: UsageLimits | None = None,
+    usage: Usage | None = None,
+    infer_name: bool = True
+) -> AgentRunResult[RunResultDataT]
+
+run(
+    user_prompt: str | Sequence[UserContent],
+    *,
+    result_type: type[RunResultDataT] | None = None,
+    message_history: list[ModelMessage] | None = None,
+    model: Model | KnownModelName | None = None,
+    deps: AgentDepsT = None,
+    model_settings: ModelSettings | None = None,
+    usage_limits: UsageLimits | None = None,
+    usage: Usage | None = None,
+    infer_name: bool = True
+) -> AgentRunResult[Any]
+Run the agent with a user prompt in async mode.
+
+This method builds an internal agent graph (using system prompts, tools and result schemas) and then runs the graph to completion. The result of the run is returned.
+
+Example:
+
+
+from pydantic_ai import Agent
+
+agent = Agent('openai:gpt-4o')
+
+async def main():
+    agent_run = await agent.run('What is the capital of France?')
+    print(agent_run.data)
+    #> Paris
+Parameters:
+
+Name	Type	Description	Default
+user_prompt	str | Sequence[UserContent]	User input to start/continue the conversation.	required
+result_type	type[RunResultDataT] | None	Custom result type to use for this run, result_type may only be used if the agent has no result validators since result validators would expect an argument that matches the agent's result type.	None
+message_history	list[ModelMessage] | None	History of the conversation so far.	None
+model	Model | KnownModelName | None	Optional model to use for this run, required if model was not set when creating the agent.	None
+deps	AgentDepsT	Optional dependencies to use for this run.	None
+model_settings	ModelSettings | None	Optional settings to use for this model's request.	None
+usage_limits	UsageLimits | None	Optional limits on model request count or token usage.	None
+usage	Usage | None	Optional usage to start with, useful for resuming a conversation or agents used in tools.	None
+infer_name	bool	Whether to try to infer the agent name from the call frame if it's not set.	True
+Returns:
+
+Type	Description
+AgentRunResult[Any]	The result of the run.
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+iter
+
+iter(
+    user_prompt: str | Sequence[UserContent],
+    *,
+    result_type: type[RunResultDataT] | None = None,
+    message_history: list[ModelMessage] | None = None,
+    model: Model | KnownModelName | None = None,
+    deps: AgentDepsT = None,
+    model_settings: ModelSettings | None = None,
+    usage_limits: UsageLimits | None = None,
+    usage: Usage | None = None,
+    infer_name: bool = True
+) -> Iterator[AgentRun[AgentDepsT, Any]]
+A contextmanager which can be used to iterate over the agent graph's nodes as they are executed.
+
+This method builds an internal agent graph (using system prompts, tools and result schemas) and then returns an AgentRun object. The AgentRun can be used to async-iterate over the nodes of the graph as they are executed. This is the API to use if you want to consume the outputs coming from each LLM model response, or the stream of events coming from the execution of tools.
+
+The AgentRun also provides methods to access the full message history, new messages, and usage statistics, and the final result of the run once it has completed.
+
+For more details, see the documentation of AgentRun.
+
+Example:
+
+
+from pydantic_ai import Agent
+
+agent = Agent('openai:gpt-4o')
+
+async def main():
+    nodes = []
+    with agent.iter('What is the capital of France?') as agent_run:
+        async for node in agent_run:
+            nodes.append(node)
+    print(nodes)
+    '''
+    [
+        ModelRequestNode(
+            request=ModelRequest(
+                parts=[
+                    UserPromptPart(
+                        content='What is the capital of France?',
+                        timestamp=datetime.datetime(...),
+                        part_kind='user-prompt',
+                    )
+                ],
+                kind='request',
+            )
+        ),
+        HandleResponseNode(
+            model_response=ModelResponse(
+                parts=[TextPart(content='Paris', part_kind='text')],
+                model_name='gpt-4o',
+                timestamp=datetime.datetime(...),
+                kind='response',
+            )
+        ),
+        End(data=FinalResult(data='Paris', tool_name=None)),
+    ]
+    '''
+    print(agent_run.result.data)
+    #> Paris
+Parameters:
+
+Name	Type	Description	Default
+user_prompt	str | Sequence[UserContent]	User input to start/continue the conversation.	required
+result_type	type[RunResultDataT] | None	Custom result type to use for this run, result_type may only be used if the agent has no result validators since result validators would expect an argument that matches the agent's result type.	None
+message_history	list[ModelMessage] | None	History of the conversation so far.	None
+model	Model | KnownModelName | None	Optional model to use for this run, required if model was not set when creating the agent.	None
+deps	AgentDepsT	Optional dependencies to use for this run.	None
+model_settings	ModelSettings | None	Optional settings to use for this model's request.	None
+usage_limits	UsageLimits | None	Optional limits on model request count or token usage.	None
+usage	Usage | None	Optional usage to start with, useful for resuming a conversation or agents used in tools.	None
+infer_name	bool	Whether to try to infer the agent name from the call frame if it's not set.	True
+Returns:
+
+Type	Description
+Iterator[AgentRun[AgentDepsT, Any]]	The result of the run.
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+run_sync
+
+run_sync(
+    user_prompt: str | Sequence[UserContent],
+    *,
+    message_history: list[ModelMessage] | None = None,
+    model: Model | KnownModelName | None = None,
+    deps: AgentDepsT = None,
+    model_settings: ModelSettings | None = None,
+    usage_limits: UsageLimits | None = None,
+    usage: Usage | None = None,
+    infer_name: bool = True
+) -> AgentRunResult[ResultDataT]
+
+run_sync(
+    user_prompt: str | Sequence[UserContent],
+    *,
+    result_type: type[RunResultDataT] | None,
+    message_history: list[ModelMessage] | None = None,
+    model: Model | KnownModelName | None = None,
+    deps: AgentDepsT = None,
+    model_settings: ModelSettings | None = None,
+    usage_limits: UsageLimits | None = None,
+    usage: Usage | None = None,
+    infer_name: bool = True
+) -> AgentRunResult[RunResultDataT]
+
+run_sync(
+    user_prompt: str | Sequence[UserContent],
+    *,
+    result_type: type[RunResultDataT] | None = None,
+    message_history: list[ModelMessage] | None = None,
+    model: Model | KnownModelName | None = None,
+    deps: AgentDepsT = None,
+    model_settings: ModelSettings | None = None,
+    usage_limits: UsageLimits | None = None,
+    usage: Usage | None = None,
+    infer_name: bool = True
+) -> AgentRunResult[Any]
+Synchronously run the agent with a user prompt.
+
+This is a convenience method that wraps self.run with loop.run_until_complete(...). You therefore can't use this method inside async code or if there's an active event loop.
+
+Example:
+
+
+from pydantic_ai import Agent
+
+agent = Agent('openai:gpt-4o')
+
+result_sync = agent.run_sync('What is the capital of Italy?')
+print(result_sync.data)
+#> Rome
+Parameters:
+
+Name	Type	Description	Default
+user_prompt	str | Sequence[UserContent]	User input to start/continue the conversation.	required
+result_type	type[RunResultDataT] | None	Custom result type to use for this run, result_type may only be used if the agent has no result validators since result validators would expect an argument that matches the agent's result type.	None
+message_history	list[ModelMessage] | None	History of the conversation so far.	None
+model	Model | KnownModelName | None	Optional model to use for this run, required if model was not set when creating the agent.	None
+deps	AgentDepsT	Optional dependencies to use for this run.	None
+model_settings	ModelSettings | None	Optional settings to use for this model's request.	None
+usage_limits	UsageLimits | None	Optional limits on model request count or token usage.	None
+usage	Usage | None	Optional usage to start with, useful for resuming a conversation or agents used in tools.	None
+infer_name	bool	Whether to try to infer the agent name from the call frame if it's not set.	True
+Returns:
+
+Type	Description
+AgentRunResult[Any]	The result of the run.
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+run_stream async
+
+run_stream(
+    user_prompt: str | Sequence[UserContent],
+    *,
+    result_type: None = None,
+    message_history: list[ModelMessage] | None = None,
+    model: Model | KnownModelName | None = None,
+    deps: AgentDepsT = None,
+    model_settings: ModelSettings | None = None,
+    usage_limits: UsageLimits | None = None,
+    usage: Usage | None = None,
+    infer_name: bool = True
+) -> AbstractAsyncContextManager[
+    StreamedRunResult[AgentDepsT, ResultDataT]
+]
+
+run_stream(
+    user_prompt: str | Sequence[UserContent],
+    *,
+    result_type: type[RunResultDataT],
+    message_history: list[ModelMessage] | None = None,
+    model: Model | KnownModelName | None = None,
+    deps: AgentDepsT = None,
+    model_settings: ModelSettings | None = None,
+    usage_limits: UsageLimits | None = None,
+    usage: Usage | None = None,
+    infer_name: bool = True
+) -> AbstractAsyncContextManager[
+    StreamedRunResult[AgentDepsT, RunResultDataT]
+]
+
+run_stream(
+    user_prompt: str | Sequence[UserContent],
+    *,
+    result_type: type[RunResultDataT] | None = None,
+    message_history: list[ModelMessage] | None = None,
+    model: Model | KnownModelName | None = None,
+    deps: AgentDepsT = None,
+    model_settings: ModelSettings | None = None,
+    usage_limits: UsageLimits | None = None,
+    usage: Usage | None = None,
+    infer_name: bool = True
+) -> AsyncIterator[StreamedRunResult[AgentDepsT, Any]]
+Run the agent with a user prompt in async mode, returning a streamed response.
+
+Example:
+
+
+from pydantic_ai import Agent
+
+agent = Agent('openai:gpt-4o')
+
+async def main():
+    async with agent.run_stream('What is the capital of the UK?') as response:
+        print(await response.get_data())
+        #> London
+Parameters:
+
+Name	Type	Description	Default
+user_prompt	str | Sequence[UserContent]	User input to start/continue the conversation.	required
+result_type	type[RunResultDataT] | None	Custom result type to use for this run, result_type may only be used if the agent has no result validators since result validators would expect an argument that matches the agent's result type.	None
+message_history	list[ModelMessage] | None	History of the conversation so far.	None
+model	Model | KnownModelName | None	Optional model to use for this run, required if model was not set when creating the agent.	None
+deps	AgentDepsT	Optional dependencies to use for this run.	None
+model_settings	ModelSettings | None	Optional settings to use for this model's request.	None
+usage_limits	UsageLimits | None	Optional limits on model request count or token usage.	None
+usage	Usage | None	Optional usage to start with, useful for resuming a conversation or agents used in tools.	None
+infer_name	bool	Whether to try to infer the agent name from the call frame if it's not set.	True
+Returns:
+
+Type	Description
+AsyncIterator[StreamedRunResult[AgentDepsT, Any]]	The result of the run.
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+override
+
+override(
+    *,
+    deps: AgentDepsT | Unset = UNSET,
+    model: Model | KnownModelName | Unset = UNSET
+) -> Iterator[None]
+Context manager to temporarily override agent dependencies and model.
+
+This is particularly useful when testing. You can find an example of this here.
+
+Parameters:
+
+Name	Type	Description	Default
+deps	AgentDepsT | Unset	The dependencies to use instead of the dependencies passed to the agent run.	UNSET
+model	Model | KnownModelName | Unset	The model to use instead of the model passed to the agent run.	UNSET
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+system_prompt
+
+system_prompt(
+    func: Callable[[RunContext[AgentDepsT]], str],
+) -> Callable[[RunContext[AgentDepsT]], str]
+
+system_prompt(
+    func: Callable[
+        [RunContext[AgentDepsT]], Awaitable[str]
+    ],
+) -> Callable[[RunContext[AgentDepsT]], Awaitable[str]]
+
+system_prompt(func: Callable[[], str]) -> Callable[[], str]
+
+system_prompt(
+    func: Callable[[], Awaitable[str]],
+) -> Callable[[], Awaitable[str]]
+
+system_prompt(*, dynamic: bool = False) -> Callable[
+    [SystemPromptFunc[AgentDepsT]],
+    SystemPromptFunc[AgentDepsT],
+]
+
+system_prompt(
+    func: SystemPromptFunc[AgentDepsT] | None = None,
+    /,
+    *,
+    dynamic: bool = False,
+) -> (
+    Callable[
+        [SystemPromptFunc[AgentDepsT]],
+        SystemPromptFunc[AgentDepsT],
+    ]
+    | SystemPromptFunc[AgentDepsT]
+)
+Decorator to register a system prompt function.
+
+Optionally takes RunContext as its only argument. Can decorate a sync or async functions.
+
+The decorator can be used either bare (agent.system_prompt) or as a function call (agent.system_prompt(...)), see the examples below.
+
+Overloads for every possible signature of system_prompt are included so the decorator doesn't obscure the type of the function, see tests/typed_agent.py for tests.
+
+Parameters:
+
+Name	Type	Description	Default
+func	SystemPromptFunc[AgentDepsT] | None	The function to decorate	None
+dynamic	bool	If True, the system prompt will be reevaluated even when messages_history is provided, see SystemPromptPart.dynamic_ref	False
+Example:
+
+
+from pydantic_ai import Agent, RunContext
+
+agent = Agent('test', deps_type=str)
+
+@agent.system_prompt
+def simple_system_prompt() -> str:
+    return 'foobar'
+
+@agent.system_prompt(dynamic=True)
+async def async_system_prompt(ctx: RunContext[str]) -> str:
+    return f'{ctx.deps} is the best'
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+result_validator
+
+result_validator(
+    func: Callable[
+        [RunContext[AgentDepsT], ResultDataT], ResultDataT
+    ],
+) -> Callable[
+    [RunContext[AgentDepsT], ResultDataT], ResultDataT
+]
+
+result_validator(
+    func: Callable[
+        [RunContext[AgentDepsT], ResultDataT],
+        Awaitable[ResultDataT],
+    ],
+) -> Callable[
+    [RunContext[AgentDepsT], ResultDataT],
+    Awaitable[ResultDataT],
+]
+
+result_validator(
+    func: Callable[[ResultDataT], ResultDataT],
+) -> Callable[[ResultDataT], ResultDataT]
+
+result_validator(
+    func: Callable[[ResultDataT], Awaitable[ResultDataT]],
+) -> Callable[[ResultDataT], Awaitable[ResultDataT]]
+
+result_validator(
+    func: ResultValidatorFunc[AgentDepsT, ResultDataT],
+) -> ResultValidatorFunc[AgentDepsT, ResultDataT]
+Decorator to register a result validator function.
+
+Optionally takes RunContext as its first argument. Can decorate a sync or async functions.
+
+Overloads for every possible signature of result_validator are included so the decorator doesn't obscure the type of the function, see tests/typed_agent.py for tests.
+
+Example:
+
+
+from pydantic_ai import Agent, ModelRetry, RunContext
+
+agent = Agent('test', deps_type=str)
+
+@agent.result_validator
+def result_validator_simple(data: str) -> str:
+    if 'wrong' in data:
+        raise ModelRetry('wrong response')
+    return data
+
+@agent.result_validator
+async def result_validator_deps(ctx: RunContext[str], data: str) -> str:
+    if ctx.deps in data:
+        raise ModelRetry('wrong response')
+    return data
+
+result = agent.run_sync('foobar', deps='spam')
+print(result.data)
+#> success (no tool calls)
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+tool
+
+tool(
+    func: ToolFuncContext[AgentDepsT, ToolParams],
+) -> ToolFuncContext[AgentDepsT, ToolParams]
+
+tool(
+    *,
+    retries: int | None = None,
+    prepare: ToolPrepareFunc[AgentDepsT] | None = None,
+    docstring_format: DocstringFormat = "auto",
+    require_parameter_descriptions: bool = False
+) -> Callable[
+    [ToolFuncContext[AgentDepsT, ToolParams]],
+    ToolFuncContext[AgentDepsT, ToolParams],
+]
+
+tool(
+    func: (
+        ToolFuncContext[AgentDepsT, ToolParams] | None
+    ) = None,
+    /,
+    *,
+    retries: int | None = None,
+    prepare: ToolPrepareFunc[AgentDepsT] | None = None,
+    docstring_format: DocstringFormat = "auto",
+    require_parameter_descriptions: bool = False,
+) -> Any
+Decorator to register a tool function which takes RunContext as its first argument.
+
+Can decorate a sync or async functions.
+
+The docstring is inspected to extract both the tool description and description of each parameter, learn more.
+
+We can't add overloads for every possible signature of tool, since the return type is a recursive union so the signature of functions decorated with @agent.tool is obscured.
+
+Example:
+
+
+from pydantic_ai import Agent, RunContext
+
+agent = Agent('test', deps_type=int)
+
+@agent.tool
+def foobar(ctx: RunContext[int], x: int) -> int:
+    return ctx.deps + x
+
+@agent.tool(retries=2)
+async def spam(ctx: RunContext[str], y: float) -> float:
+    return ctx.deps + y
+
+result = agent.run_sync('foobar', deps=1)
+print(result.data)
+#> {"foobar":1,"spam":1.0}
+Parameters:
+
+Name	Type	Description	Default
+func	ToolFuncContext[AgentDepsT, ToolParams] | None	The tool function to register.	None
+retries	int | None	The number of retries to allow for this tool, defaults to the agent's default retries, which defaults to 1.	None
+prepare	ToolPrepareFunc[AgentDepsT] | None	custom method to prepare the tool definition for each step, return None to omit this tool from a given step. This is useful if you want to customise a tool at call time, or omit it completely from a step. See ToolPrepareFunc.	None
+docstring_format	DocstringFormat	The format of the docstring, see DocstringFormat. Defaults to 'auto', such that the format is inferred from the structure of the docstring.	'auto'
+require_parameter_descriptions	bool	If True, raise an error if a parameter description is missing. Defaults to False.	False
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+tool_plain
+
+tool_plain(
+    func: ToolFuncPlain[ToolParams],
+) -> ToolFuncPlain[ToolParams]
+
+tool_plain(
+    *,
+    retries: int | None = None,
+    prepare: ToolPrepareFunc[AgentDepsT] | None = None,
+    docstring_format: DocstringFormat = "auto",
+    require_parameter_descriptions: bool = False
+) -> Callable[
+    [ToolFuncPlain[ToolParams]], ToolFuncPlain[ToolParams]
+]
+
+tool_plain(
+    func: ToolFuncPlain[ToolParams] | None = None,
+    /,
+    *,
+    retries: int | None = None,
+    prepare: ToolPrepareFunc[AgentDepsT] | None = None,
+    docstring_format: DocstringFormat = "auto",
+    require_parameter_descriptions: bool = False,
+) -> Any
+Decorator to register a tool function which DOES NOT take RunContext as an argument.
+
+Can decorate a sync or async functions.
+
+The docstring is inspected to extract both the tool description and description of each parameter, learn more.
+
+We can't add overloads for every possible signature of tool, since the return type is a recursive union so the signature of functions decorated with @agent.tool is obscured.
+
+Example:
+
+
+from pydantic_ai import Agent, RunContext
+
+agent = Agent('test')
+
+@agent.tool
+def foobar(ctx: RunContext[int]) -> int:
+    return 123
+
+@agent.tool(retries=2)
+async def spam(ctx: RunContext[str]) -> float:
+    return 3.14
+
+result = agent.run_sync('foobar', deps=1)
+print(result.data)
+#> {"foobar":123,"spam":3.14}
+Parameters:
+
+Name	Type	Description	Default
+func	ToolFuncPlain[ToolParams] | None	The tool function to register.	None
+retries	int | None	The number of retries to allow for this tool, defaults to the agent's default retries, which defaults to 1.	None
+prepare	ToolPrepareFunc[AgentDepsT] | None	custom method to prepare the tool definition for each step, return None to omit this tool from a given step. This is useful if you want to customise a tool at call time, or omit it completely from a step. See ToolPrepareFunc.	None
+docstring_format	DocstringFormat	The format of the docstring, see DocstringFormat. Defaults to 'auto', such that the format is inferred from the structure of the docstring.	'auto'
+require_parameter_descriptions	bool	If True, raise an error if a parameter description is missing. Defaults to False.	False
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+is_model_request_node staticmethod
+
+is_model_request_node(
+    node: AgentNode[T, S] | End[FinalResult[S]],
+) -> TypeGuard[ModelRequestNode[T, S]]
+Check if the node is a ModelRequestNode, narrowing the type if it is.
+
+This method preserves the generic parameters while narrowing the type, unlike a direct call to isinstance.
+
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+is_handle_response_node staticmethod
+
+is_handle_response_node(
+    node: AgentNode[T, S] | End[FinalResult[S]],
+) -> TypeGuard[HandleResponseNode[T, S]]
+Check if the node is a HandleResponseNode, narrowing the type if it is.
+
+This method preserves the generic parameters while narrowing the type, unlike a direct call to isinstance.
+
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+is_user_prompt_node staticmethod
+
+is_user_prompt_node(
+    node: AgentNode[T, S] | End[FinalResult[S]],
+) -> TypeGuard[UserPromptNode[T, S]]
+Check if the node is a UserPromptNode, narrowing the type if it is.
+
+This method preserves the generic parameters while narrowing the type, unlike a direct call to isinstance.
+
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+is_end_node staticmethod
+
+is_end_node(
+    node: AgentNode[T, S] | End[FinalResult[S]],
+) -> TypeGuard[End[FinalResult[S]]]
+Check if the node is a End, narrowing the type if it is.
+
+This method preserves the generic parameters while narrowing the type, unlike a direct call to isinstance.
+
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+AgentRun dataclass
+Bases: Generic[AgentDepsT, ResultDataT]
+
+A stateful, async-iterable run of an Agent.
+
+You generally obtain an AgentRun instance by calling with my_agent.iter(...) as agent_run:.
+
+Once you have an instance, you can use it to iterate through the run's nodes as they execute. When an End is reached, the run finishes and result becomes available.
+
+Example:
+
+
+from pydantic_ai import Agent
+
+agent = Agent('openai:gpt-4o')
+
+async def main():
+    nodes = []
+    # Iterate through the run, recording each node along the way:
+    with agent.iter('What is the capital of France?') as agent_run:
+        async for node in agent_run:
+            nodes.append(node)
+    print(nodes)
+    '''
+    [
+        ModelRequestNode(
+            request=ModelRequest(
+                parts=[
+                    UserPromptPart(
+                        content='What is the capital of France?',
+                        timestamp=datetime.datetime(...),
+                        part_kind='user-prompt',
+                    )
+                ],
+                kind='request',
+            )
+        ),
+        HandleResponseNode(
+            model_response=ModelResponse(
+                parts=[TextPart(content='Paris', part_kind='text')],
+                model_name='gpt-4o',
+                timestamp=datetime.datetime(...),
+                kind='response',
+            )
+        ),
+        End(data=FinalResult(data='Paris', tool_name=None)),
+    ]
+    '''
+    print(agent_run.result.data)
+    #> Paris
+You can also manually drive the iteration using the next method for more granular control.
+
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+ctx property
+
+ctx: GraphRunContext[
+    GraphAgentState, GraphAgentDeps[AgentDepsT, Any]
+]
+The current context of the agent run.
+
+next_node property
+
+next_node: (
+    AgentNode[AgentDepsT, ResultDataT]
+    | End[FinalResult[ResultDataT]]
+)
+The next node that will be run in the agent graph.
+
+This is the next node that will be used during async iteration, or if a node is not passed to self.next(...).
+
+result property
+
+result: AgentRunResult[ResultDataT] | None
+The final result of the run if it has ended, otherwise None.
+
+Once the run returns an End node, result is populated with an AgentRunResult.
+
+__aiter__
+
+__aiter__() -> (
+    AsyncIterator[
+        AgentNode[AgentDepsT, ResultDataT]
+        | End[FinalResult[ResultDataT]]
+    ]
+)
+Provide async-iteration over the nodes in the agent run.
+
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+__anext__ async
+
+__anext__() -> (
+    AgentNode[AgentDepsT, ResultDataT]
+    | End[FinalResult[ResultDataT]]
+)
+Advance to the next node automatically based on the last returned node.
+
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+next async
+
+next(
+    node: AgentNode[AgentDepsT, ResultDataT],
+) -> (
+    AgentNode[AgentDepsT, ResultDataT]
+    | End[FinalResult[ResultDataT]]
+)
+Manually drive the agent run by passing in the node you want to run next.
+
+This lets you inspect or mutate the node before continuing execution, or skip certain nodes under dynamic conditions. The agent run should be stopped when you return an End node.
+
+Example:
+
+
+from pydantic_ai import Agent
+from pydantic_graph import End
+
+agent = Agent('openai:gpt-4o')
+
+async def main():
+    with agent.iter('What is the capital of France?') as agent_run:
+        next_node = agent_run.next_node  # start with the first node
+        nodes = [next_node]
+        while not isinstance(next_node, End):
+            next_node = await agent_run.next(next_node)
+            nodes.append(next_node)
+        # Once `next_node` is an End, we've finished:
+        print(nodes)
+        '''
+        [
+            UserPromptNode(
+                user_prompt='What is the capital of France?',
+                system_prompts=(),
+                system_prompt_functions=[],
+                system_prompt_dynamic_functions={},
+            ),
+            ModelRequestNode(
+                request=ModelRequest(
+                    parts=[
+                        UserPromptPart(
+                            content='What is the capital of France?',
+                            timestamp=datetime.datetime(...),
+                            part_kind='user-prompt',
+                        )
+                    ],
+                    kind='request',
+                )
+            ),
+            HandleResponseNode(
+                model_response=ModelResponse(
+                    parts=[TextPart(content='Paris', part_kind='text')],
+                    model_name='gpt-4o',
+                    timestamp=datetime.datetime(...),
+                    kind='response',
+                )
+            ),
+            End(data=FinalResult(data='Paris', tool_name=None)),
+        ]
+        '''
+        print('Final result:', agent_run.result.data)
+        #> Final result: Paris
+Parameters:
+
+Name	Type	Description	Default
+node	AgentNode[AgentDepsT, ResultDataT]	The node to run next in the graph.	required
+Returns:
+
+Type	Description
+AgentNode[AgentDepsT, ResultDataT] | End[FinalResult[ResultDataT]]	The next node returned by the graph logic, or an End node if
+AgentNode[AgentDepsT, ResultDataT] | End[FinalResult[ResultDataT]]	the run has completed.
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+usage
+
+usage() -> Usage
+Get usage statistics for the run so far, including token usage, model requests, and so on.
+
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+AgentRunResult dataclass
+Bases: Generic[ResultDataT]
+
+The final result of an agent run.
+
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+all_messages
+
+all_messages(
+    *, result_tool_return_content: str | None = None
+) -> list[ModelMessage]
+Return the history of _messages.
+
+Parameters:
+
+Name	Type	Description	Default
+result_tool_return_content	str | None	The return content of the tool call to set in the last message. This provides a convenient way to modify the content of the result tool call if you want to continue the conversation and want to set the response to the result tool call. If None, the last message will not be modified.	None
+Returns:
+
+Type	Description
+list[ModelMessage]	List of messages.
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+all_messages_json
+
+all_messages_json(
+    *, result_tool_return_content: str | None = None
+) -> bytes
+Return all messages from all_messages as JSON bytes.
+
+Parameters:
+
+Name	Type	Description	Default
+result_tool_return_content	str | None	The return content of the tool call to set in the last message. This provides a convenient way to modify the content of the result tool call if you want to continue the conversation and want to set the response to the result tool call. If None, the last message will not be modified.	None
+Returns:
+
+Type	Description
+bytes	JSON bytes representing the messages.
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+new_messages
+
+new_messages(
+    *, result_tool_return_content: str | None = None
+) -> list[ModelMessage]
+Return new messages associated with this run.
+
+Messages from older runs are excluded.
+
+Parameters:
+
+Name	Type	Description	Default
+result_tool_return_content	str | None	The return content of the tool call to set in the last message. This provides a convenient way to modify the content of the result tool call if you want to continue the conversation and want to set the response to the result tool call. If None, the last message will not be modified.	None
+Returns:
+
+Type	Description
+list[ModelMessage]	List of new messages.
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+new_messages_json
+
+new_messages_json(
+    *, result_tool_return_content: str | None = None
+) -> bytes
+Return new messages from new_messages as JSON bytes.
+
+Parameters:
+
+Name	Type	Description	Default
+result_tool_return_content	str | None	The return content of the tool call to set in the last message. This provides a convenient way to modify the content of the result tool call if you want to continue the conversation and want to set the response to the result tool call. If None, the last message will not be modified.	None
+Returns:
+
+Type	Description
+bytes	JSON bytes representing the new messages.
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+usage
+
+usage() -> Usage
+Return the usage of the whole run.
+
+Source code in pydantic_ai_slim/pydantic_ai/agent.py
+EndStrategy module-attribute
+
+EndStrategy = EndStrategy
+RunResultDataT module-attribute
+
+RunResultDataT = TypeVar('RunResultDataT')
+Type variable for the result data of a run where result_type was customized on the run call.
+
+capture_run_messages module-attribute
+
+capture_run_messages = capture_run_messages

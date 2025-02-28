@@ -11,7 +11,8 @@ from ..utils import (
 from .history_service import HistoryService
 from .database_service import DatabaseService, QueryResult
 from .llm_service import llm_service, LLMResponse
-from .vector_store import vector_store
+# 暫時註解掉 vector_store 以便程式可以啟動
+# from .vector_store import vector_store
 from .conversation_service import conversation_manager
 from ..models import QueryHistoryModel
 import logging
@@ -50,8 +51,13 @@ class TextToSQLService:
         self.history_service = HistoryService(use_db=False)  # 預設使用 JSON 文件存儲
         self.db_service = DatabaseService()
         
-        # 初始化向量存儲服務
-        self.vector_store = vector_store
+        # 初始化向量存儲服務（暫時註解掉）
+        # self.vector_store = vector_store
+        # 建立一個临時空物件供使用
+        from types import SimpleNamespace
+        self.vector_store = SimpleNamespace()
+        self.vector_store.search_similar = lambda *args, **kwargs: []
+        self.vector_store.add_query = lambda *args, **kwargs: None
         
         # 初始化對話管理器
         self.conversation_manager = conversation_manager
