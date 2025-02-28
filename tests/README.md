@@ -6,16 +6,20 @@
 
 測試使用 pytest 和 unittest 框架，主要測試以下組件：
 
-1. **HistoryService** - 測試查詢歷史、收藏和模板功能
-2. **文件存儲模式** - 測試使用 JSON 文件進行數據存儲的功能 
-3. **CLI 命令** - 測試命令行界面功能
+1. **TextToSQL 核心服務** - 文本到 SQL 轉換功能
+2. **API 端點** - 測試 HTTP 接口
+3. **HistoryService** - 測試查詢歷史、收藏和模板功能
+4. **文件存儲模式** - 測試使用 JSON 文件進行數據存儲的功能 
+5. **CLI 命令** - 測試命令行界面功能
+6. **對話管理** - 測試對話上下文處理功能
 
 ## 測試方式
 
-本專案提供了兩種測試方式：
+本專案提供了三種測試方式：
 
 1. **pytest 測試** - 在 `tests/` 目錄，需要完整安裝環境
 2. **unittest 測試** - 在 `unittest/` 目錄，使用獨立模擬環境，不依賴外部服務
+3. **端到端測試** - 在 `tests/end_to_end/` 目錄，測試完整功能流程
 
 ## 執行測試
 
@@ -64,7 +68,36 @@ python -m unittest discover -v unittest
 python -m unittest unittest/test_history_service.py
 ```
 
+### 執行端到端測試
+
+```bash
+# 執行所有端到端測試
+./tests/run_e2e_tests.py
+
+# 執行特定組件的端到端測試
+./tests/run_e2e_tests.py -c api
+./tests/run_e2e_tests.py -c conversation
+./tests/run_e2e_tests.py -c texttosql
+
+# 顯示詳細輸出
+./tests/run_e2e_tests.py -v
+```
+
 ## 測試說明
+
+### TextToSQL 核心測試
+
+`tests/core_tests/test_text_to_sql.py` 測試核心 TextToSQL 轉換功能。
+`tests/end_to_end/test_text_to_sql_e2e.py` 提供完整的端到端功能測試。
+
+### API 測試
+
+`tests/api/test_api_integration.py` 測試 API 的關鍵功能。
+`tests/end_to_end/test_api_e2e.py` 測試 API 的完整功能流程。
+
+### 對話管理測試
+
+`tests/end_to_end/test_conversation_e2e.py` 測試對話上下文處理功能。
 
 ### HistoryService 測試 (pytest)
 
@@ -95,10 +128,12 @@ python -m unittest unittest/test_history_service.py
 1. 為新功能創建測試文件
    - pytest 測試：`tests/test_{component}.py`
    - unittest 測試：`unittest/test_{component}.py`
+   - 端到端測試：`tests/end_to_end/test_{component}_e2e.py`
 2. 在測試文件中創建測試類和測試方法
 3. 根據測試類型使用適當的方法：
    - pytest：使用 fixtures 提供測試數據和依賴
    - unittest：使用模擬 (mock) 對象和 setUp/tearDown 方法
+   - 端到端測試：確保使用 `@pytest.mark.e2e` 標記
 
 ### 建議測試實踐
 
@@ -106,3 +141,4 @@ python -m unittest unittest/test_history_service.py
 - 使用 assert 驗證結果
 - 模擬外部依賴，避免測試依賴真實外部服務
 - 關鍵功能同時使用 pytest 和 unittest 測試，確保全面覆蓋
+- 針對核心功能流程撰寫端到端測試

@@ -5,9 +5,7 @@ from .services import (
     SQLResult, 
     DatabaseService, 
     llm_service, 
-    LLMResponse,
-    conversation_manager,
-    visualization_service
+    LLMResponse
 )
 from .models import QueryHistoryModel
 from .utils import settings
@@ -46,7 +44,6 @@ class QueryRequest(BaseModel):
     query: str = Field(..., description="自然語言查詢")
     execute: bool = Field(default=False, description="是否執行生成的查詢")
     model: Optional[str] = Field(default=None, description="使用的模型名稱")
-    find_similar: bool = Field(default=True, description="是否查找相似查詢")
     session_id: Optional[str] = Field(default=None, description="會話ID，用於對話上下文管理")
     
     @validator('model')
@@ -78,17 +75,8 @@ class TableSchemaResponse(BaseModel):
     foreign_keys: List[Dict[str, Any]]
 
 
-class SimilarQueryModel(BaseModel):
-    """API 相似查詢模型"""
-    query: str = Field(description="原始自然語言查詢")
-    sql: str = Field(description="SQL 查詢")
-    similarity: float = Field(description="相似度分數 (0-1)")
-    timestamp: str = Field(description="查詢時間")
-
-
 class SQLResultResponse(SQLResult):
-    """SQL結果響應模型，包含相似查詢"""
-    similar_queries: Optional[List[SimilarQueryModel]] = None
+    """SQL結果響應模型"""
     parameters: Optional[Dict[str, Any]] = Field(default=None, description="SQL參數")
 
 
@@ -99,10 +87,9 @@ async def convert_text_to_sql(request: QueryRequest):
     
     - 如果 execute=True，將執行生成的查詢並返回結果
     - 可以指定使用的模型，默認使用設定中的默認模型
-    - 如果 find_similar=True，將查找並返回相似的歷史查詢
     """
     try:
-        logger.info(f"接收到查詢: {request.query}, execute={request.execute}, model={request.model or settings.default_model}, find_similar={request.find_similar}")
+        logger.info(f"接收到查詢: {request.query}, execute={request.execute}, model={request.model or settings.default_model}")
         
         # 臨時設置默認模型
         original_default = settings.default_model
@@ -113,8 +100,7 @@ async def convert_text_to_sql(request: QueryRequest):
         result = text_to_sql_service.text_to_sql(
             query=request.query, 
             session_id=request.session_id,
-            execute=request.execute,
-            find_similar=request.find_similar
+            execute=request.execute
         )
         
         # 恢復默認模型
@@ -201,65 +187,6 @@ async def get_table_schema(table_name: str):
         raise HTTPException(status_code=500, detail=f"獲取表結構時發生錯誤: {str(e)}")
 
 
-@app.get("/api/vector-store/stats")
-async def get_vector_store_stats():
-    """獲取向量存儲統計信息"""
-    try:
-        from .services import vector_store
-        count = vector_store.get_count()
-        return {
-            "count": count,
-            "status": "active" if count > 0 else "empty"
-        }
-    except Exception as e:
-        logger.error(f"獲取向量存儲統計時發生錯誤: {e}")
-        raise HTTPException(status_code=500, detail=f"獲取向量存儲統計時發生錯誤: {str(e)}")
-
-
-@app.get("/api/vector-store/search")
-async def search_similar_queries(
-    query: str = Query(..., description="要搜索的查詢"),
-    limit: int = Query(5, description="返回結果數量限制")
-):
-    """搜索相似查詢"""
-    try:
-        from .services import vector_store
-        results = vector_store.search_similar(query, k=limit)
-        return results
-    except Exception as e:
-        logger.error(f"搜索相似查詢時發生錯誤: {e}")
-        raise HTTPException(status_code=500, detail=f"搜索相似查詢時發生錯誤: {str(e)}")
-
-
-@app.post("/api/vector-store/clear")
-async def clear_vector_store():
-    """清除向量存儲數據"""
-    try:
-        from .services import vector_store
-        vector_store.clear()
-        return {"message": "向量存儲已清除"}
-    except Exception as e:
-        logger.error(f"清除向量存儲時發生錯誤: {e}")
-        raise HTTPException(status_code=500, detail=f"清除向量存儲時發生錯誤: {str(e)}")
-
-
-class AddQueryRequest(BaseModel):
-    """添加查詢請求模型"""
-    query: str = Field(..., description="自然語言查詢")
-    sql: str = Field(..., description="SQL 查詢")
-    metadata: Dict[str, Any] = Field(default_factory=dict, description="額外的元數據")
-
-
-@app.post("/api/vector-store/add")
-async def add_query_to_vector_store(request: AddQueryRequest):
-    """添加查詢到向量存儲"""
-    try:
-        from .services import vector_store
-        query_id = vector_store.add_query(request.query, request.sql, request.metadata)
-        return {"id": query_id}
-    except Exception as e:
-        logger.error(f"添加查詢到向量存儲時發生錯誤: {e}")
-        raise HTTPException(status_code=500, detail=f"添加查詢到向量存儲時發生錯誤: {str(e)}")
 
 
 @app.get("/api/models")
